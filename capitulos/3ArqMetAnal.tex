@@ -1,0 +1,93 @@
+\chapter{Metodologia}\label{cap:arquitetura}
+
+\section{Introdução}
+Este capítulo descreve os procedimentos metodológicos adotados e os recursos empregados para alcançar os objetivos deste trabalho. A apresentação é dividida em seções que abordam, respectivamente, a classificação formal da pesquisa, os materiais de software e hardware utilizados e, por fim, o projeto e a arquitetura da solução que serviram de base para a implementação detalhada no próximo capitulo.
+
+\section{Classificação da pesquisa}
+Este projeto propôs ampliar a linguagem de programação RL, adicionando novas funcionalidades de TinyML por meio da integração de uma biblioteca de software. Sendo assim, quanto à sua natureza, esta pesquisa caracterizou-se como aplicada, pois buscou gerar conhecimento para uso prático direto na ampliação da linguagem RL com funcionalidades de TinyML. Quanto aos objetivos, foi exploratória, pois investigou como tais recursos poderiam ser incorporados na linguagem. Em relação aos procedimentos, além de ter sido documental e bibliográfica, por se basear em artigos e materiais já publicados, a pesquisa foi também experimental, uma vez que envolveu a implementação prática e a avaliação das novas funcionalidades na linguagem RL. Por fim, a abordagem foi quantitativa, ao avaliar o desempenho por meio de dados como latência, e qualitativa, com a análise de atributos como simplicidade e manutenibilidade da solução.
+
+\section{Materiais}
+Nessa seção, serão abordados todos os materiais que serão utilizados durante a pesquisa. Isso inclui não somente dispositivos físicos, mas também as tecnologias e os \textit{softwares} que serão empregados.
+
+\subsection{Software}
+Os novos recursos e funcionalidades implementados diretamente na linguagem RL foram escritos em C++ e desenvolvidos com o auxílio das ferramentas Flex (versão 2.6.4) e Bison (versão 3.8.2), responsáveis por gerar os analisadores léxico e sintático do Robcmp. As adições foram incorporadas à sintaxe da linguagem por meio da criação de novas palavras reservadas.
+
+O ambiente de desenvolvimento foi o Visual Studio Code (versão 1.101), com o auxílio de duas extensões principais: o PlatformIO (versão 6.1.18), para depurar e exportar os \textit{firmwares} para as placas, e o RobCmpSyntax (versão 1.0), que fornece o realce de sintaxe para arquivos .rob. Para a fase de testes e simulações, foi empregado o emulador QEMU\footnote{Disponível em: \url{https://www.qemu.org}} (versão 10.0.2), capaz de emular os microcontroladores da família ARM utilizados no projeto.
+
+\subsection{Hardware}
+A máquina de desenvolvimento utilizada foi um \textit{notebook} Lenovo IdeaPad 3 15ITL6, equipado com um processador Intel® Core™ i7-1165G7, 16 GB de RAM e sistema operacional Ubuntu 24.04.1 LTS. Além da máquina de desenvolvimento, a execução e validação das aplicações ocorreram em placas com microcontroladores da família ARM, STM32F401RE e o STM32F405RGT6.
+
+
+\section{Projeto e Arquitetura da Solução}
+Para que a integração fosse desenvolvida corretamente, foi fundamental definir quais funções da biblioteca TFLM seriam utilizáveis no Robcmp. Essa tarefa também incluiu a determinação de quais funcionalidades seriam nativas da linguagem e quais pertenceriam à biblioteca padrão.
+
+A implementação de uma funcionalidade de forma nativa implicou em adicionar novas palavras reservadas à sintaxe da linguagem, ou seja, modificar as análises léxica e sintática. Em contrapartida, as funcionalidades que não modificaram as análises léxica e sintática do Robcmp foram oferecidas por meio da biblioteca padrão. Escritas em arquivos com a extensão .rob, elas puderam ser reaproveitadas pelos desenvolvedores ao importá-las no início de seus códigos. A biblioteca do Robcmp já contemplava alguns módulos, como o math, que podia ser importado para a utilização de funções matemáticas.
+
+A \hyperref[fig:nova_sintaxe]{Figura~\ref{fig:nova_sintaxe}} exibe um trecho de código que exemplifica o fluxo de um programa utilizando as novas palavras-chave da linguagem RL. A palavra-chave \texttt{model} foi utilizada para carregar o modelo e criar um objeto que conteria todas as informações necessárias para seu correto funcionamento. Já o comando \texttt{invoke} ficou responsável por realizar a inferência, ou seja, processar os dados de entrada (\textit{input}) para gerar a saída (\textit{output}).
+
+% \lstset{language=rob,morekeywords=[2]{portmode,mcu,digitalport}}
+% \begin{lstlisting}[float=tp, caption=A hardware-agnostic LED blink example., label={lst:ledblink}]
+% // an mcu implementation will be bond here
+% mmcu = mcu();
+% // the firmware needs a digital port
+% led = digitalport();
+
+% int16 main() {
+% 	led.mode(portmode.output);
+% 	loop {
+% 		led.set(true);     // turn on the LED
+% 		mmcu.wait_ms(500);
+% 		led.set(false);    // turn off the LED
+% 		mmcu.wait_ms(500);
+% 	}
+% }
+% \end{lstlisting}
+
+\lstset{language=rob,morekeywords=[1]{portmode, mcu ,digitalport, model, invoke}}
+\begin{figure}[H] % Você pode usar [H], [tp], etc.
+\centering
+\begin{lstlisting}
+// Uma implementacao de microcontrolador sera vinculada aqui.
+mmcu = mcu();
+
+int16 main() {
+	
+	// 1. Define os dados de entrada e um buffer para a saida.
+	input = {0.77, 1.57, 2.3, 3.14};
+	output = {5:0.0};
+
+	// 2. Carrega o modelo
+	model meu_modelo("meu_modelo.tflite", arena_size: 4096);
+	
+	// 3. Fornece a entrada para o modelo.
+	meu_modelo.input = input;
+
+	// 4. Executar a inferencia.
+	invoke meu_modelo;
+
+	// 5. Obtem o resultado.
+	output = meu_modelo.output;
+
+	//Resto do codigo
+	
+}
+\end{lstlisting}
+\caption{Exemplo de código com a nova sintaxe para inferência de um modelo tflite.}
+\label{fig:nova_sintaxe}
+\end{figure}
+
+\section{Procedimentos de Validação Funcional}
+A etapa de validação funcional teve como objetivo verificar se a solução proposta cumpria o que prometia, sem levar em consideração sua eficiência, aplicabilidade, facilidade ou qualquer outro fator que mede sua qualidade.
+
+Nesta etapa, as novas funcionalidades foram validadas utilizando o simulador QEMU, com suporte para a emulação de plataformas da família ARM. Nesse processo, o QEMU foi empregado para executar e testar os firmwares gerados pelo compilador Robcmp, que utilizaram diferentes modelos de ML. O emulador operou no modo de Emulação de Sistema Completo (Full System Emulation), atuando como uma “placa de desenvolvimento virtual” que consegue executar o firmware e simular os periféricos necessários. A configuração e a operação da máquina virtual foram controladas por linha de comando, por meio de parâmetros que especificavam o modelo da plataforma, a CPU exata, o arquivo de firmware a ser executado, entre outros aspectos.
+
+\section{Validação da eficiência e Análise Comparativa}
+Para validar a eficiência da integração do TFLM à RL, foi realizada uma análise comparativa entre duas abordagens de desenvolvimento de firmwares. Foi comparada a solução proposta em RL com um firmware implementado diretamente em C++, utilizando o próprio TFLM como base para ambos. Para garantir uma avaliação justa, ambos os testes foram conduzidos em um MCU idêntico e com o mesmo modelo de ML. Nesta avaliação, foram considerados critérios como a facilidade de desenvolvimento, a manutenibilidade do código, a latência de inferência e o tamanho final do executável.
+
+
+
+
+
+
+
+

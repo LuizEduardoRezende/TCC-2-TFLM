@@ -1,0 +1,30 @@
+\chapter{Implementação}\label{cap:implementacao}
+
+\section{Introdução}
+Neste capítulo são apresentados os detalhes da implementação das funcionalidades propostas neste trabalho. O código-fonte completo pode ser encontrado no repositório online \url{https://github.com/LuizEduardoRezende/robcmp}. O referido repositório é um \textit{fork} do projeto Robcmp original, e todo o desenvolvimento foi realizado em uma \textit{branch} dedicada. Futuramente, será submetido um \textit{pull request} para integrar estas contribuições à \textit{branch} principal do projeto Robcmp, a fim de que as novas funcionalidades fiquem disponíveis para a comunidade.
+
+\section{Arquitetura da Camada de Interoperabilidade}
+O processo de compilação e linkedição do Robcmp pode ser explicado da seguinte forma: Programas escritos com a extensão .rob são compilados e se tornam arquivos objetos (.o), enquanto que bibliotecas externas como o TFLM ou outra são compiladas e um arquivo de biblioteca estática (.a) é gerado. Depois de compilar todos programas e bibliotecas necessários o linker entra em ação com o objetivo de resolver todas referências entre os componentes para criar o executável único que pode ser chamado de firmware.
+
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\linewidth]{Imagens/linker.png}
+\caption{Ilustração da arquitetura de compilação e interoperabilidade. A biblioteca estática (.a) do TFLM, o arquivo objeto (.o) do wrapper C++, e o arquivo objeto (.o) do programa em Robotics Language são processados de forma independente e, na etapa final, unificados pelo linker. O linker resolve as referências entre os componentes para criar o executável único.}
+\label{fig:linker}
+\end{figure}
+
+
+\section{Implementação do Wrapper C}
+
+\section{Adaptação do Frontend do Compilador}
+
+\section{Considerações Finais}
+Este trabalho tem como objetivo inicial implementar o suporte para TinyML na
+família de microcontroladores ARM Cortex-M. Contudo, como o compilador Robcmp está
+em constante evolução e pode suportar novas arquiteturas no futuro, o mesmo poderá ser
+feito para o TinyML. Para que isso ocorra, as bibliotecas do TFLM e os wrappers deverão
+ser recompilados para a plataforma-alvo específica e disponibilizados no repositório do
+Robcmp.
+
+

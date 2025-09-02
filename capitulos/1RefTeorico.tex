@@ -1,0 +1,283 @@
+\chapter{Referencial Teórico}\label{cap:referencial}
+
+\section{Introdução}
+Para facilitar a compreensão deste projeto de pesquisa, este capítulo apresenta as
+definições e conceitos que serão utilizados ao longo do trabalho.
+
+\section{Compilador}
+
+Compiladores são programas com uma função aparentemente simples: traduzir código de uma linguagem para outra. No entanto, por trás dessa definição sucinta, está um dos sistemas mais complexos da computação, formado por muitos componentes internos, algoritmos e interações complexas entre eles \cite{cooper2013engineering}.
+
+Inicialmente, o compilador pode ser visto como uma caixa-preta que recebe como entrada um código fonte (ou programa fonte) e o transforma em um código objeto (ou programa objeto). A \hyperref[fig:compilador]{Figura~\ref*{fig:compilador}} ilustra esse esquema simplificado, que ainda desconsidera as etapas internas do processo de compilação. O código fonte pode ser escrito em diversas linguagens, como C, C++, Fortran, Java ou até mesmo a RL com seu compilador Robcmp. Já a linguagem do código objeto corresponde ao conjunto de instruções de uma CPU ou MCU específico.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\linewidth]{Imagens/Compilador.png} % Ajuste o valor entre 0-1
+\caption{Esquema simplificado de um compilador. Adaptado de \citeonline{cooper2013engineering}.}
+\label{fig:compilador}
+\end{figure}
+
+É essencial conhecer as etapas envolvidas no processo de um compilador. As duas principais divisões existentes são: \textit{frontend} e \textit{backend}. Essa divisão de tarefas pode ser visualizada na \hyperref[fig:compilador-front-back]{Figura~\ref*{fig:compilador-front-back}}, que sintetiza a estrutura do processo de compilação. O \textit{frontend} do compilador é responsável por analisar o programa fonte, incluindo o processamento léxico, sintático e semântico, resultando em uma representação intermediária, como uma Árvore Sintática Abstrata (AST, do inglês \textit{Abstract Syntax Tree}) ou um código intermediário. O \textit{backend} recebe essa representação intermediária e gera código alvo otimizado, lidando com detalhes específicos da máquina, como alocação de registradores e seleção de instruções \cite{fischer2010crafting}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\linewidth]{Imagens/Compilador-front-back.png} % Ajuste o valor entre 0-1
+\caption{Compilador dividido em duas etapas. Adaptado de \citeonline{cooper2013engineering}.}
+\label{fig:compilador-front-back}
+\end{figure}
+
+\section{Frontend}
+Para que o compilador consiga traduzir o código do programa fonte, ele precisa entender tanto a forma (sintaxe) quanto o significado (semântica). O \textit{frontend} é a primeira etapa da compilação e é responsável por determinar se o código está bem construído em termos de sintaxe e semântica. Se ele identificar um código válido, uma representação intermediária é criada; caso contrário, reporta o erro ao usuário para que o problema seja identificado \cite{cooper2013engineering}.
+
+A \hyperref[fig:front-end]{Figura~\ref*{fig:front-end}} ilustra as principais etapas do \textit{frontend} consideradas neste estudo. Inicialmente, o código-fonte é submetido ao analisador léxico, que converte a sequência de caracteres em \textit{tokens} (unidades significativas). Em seguida, o analisador sintático verifica a estrutura desses \textit{tokens} e gera uma AST. Essa AST é então utilizada pelo analisador semântico para produzir uma Árvore Sintática Decorada, que finalmente é processada para gerar a Representação Intermediária (IR, do inglês \textit{Intermediate Representation}). Todas essas etapas utilizam a tabela de símbolos, seja para armazenar novas entradas ou para verificar a existência de símbolos já declarados.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\linewidth]{Imagens/Front-end.png} % Ajuste o valor entre 0-1
+\caption{Etapas do \textit{frontend} de um compilador. Adaptado de \citeonline{fischer2010crafting}.}
+\label{fig:front-end}
+\end{figure}
+
+\subsection{Analisador Léxico}
+A primeira etapa do \textit{frontend} consiste em um analisador Léxico, ou \textit{Scanner} em inglês. Ele inicia a análise do programa fonte lendo o texto de entrada (caractere por caractere) e agrupando caracteres individuais em \textit{tokens}, como identificadores, números inteiros, palavras reservadas e delimitadores \cite[p. 16]{fischer2010crafting}. No analisador léxico, autômatos finitos (AFs) atuam como núcleo do processo de reconhecimento de \textit{tokens}. Eles simulam um fluxo de transições entre estados, guiados pelos caracteres de entrada, até determinar se uma sequência é válida (aceita) ou inválida (rejeitada) \cite[p. 23]{cooper2013engineering}.
+
+O conjunto de palavras aceitas por um autômato finito, F, forma uma linguagem, indicada por L(F). O diagrama de transição do AF especifica, em detalhes precisos, esta linguagem. Para qualquer AF, também podemos descrever sua linguagem usando uma notação chamada expressão regular (RE, do inglês \textit{Regular Expression}). A linguagem descrita por uma RE é chamada de linguagem regular \cite[p. 26]{cooper2013engineering}. Tanto um AF quanto uma RE podem ser usados em um programa gerador de \textit{scanner}, um programa que produz efetivamente um analisador léxico funcional. Geradores de analisadores léxicos são ferramentas valiosas para a construção de compiladores \cite[p. 16]{fischer2010crafting}.
+
+
+\subsection{Analisador Sintático}
+A principal tarefa do analisador sintático (ou \textit{parser}, em inglês) é verificar se o programa de entrada constitui uma sentença sintaticamente válida na linguagem-fonte. Para essa finalidade, essa etapa utiliza gramáticas livres de contexto, uma vez que REs não são mais suficientes para descrever a sintaxe complexa presente na maioria das linguagens de programação \cite[p. 69, 70]{cooper2013engineering}.
+
+Apesar de uma RE, como a apresentada na \hyperref[fig:RE]{Figura~\ref*{fig:RE}}, poder reconhecer a expressão a + b × c corretamente, ela não pode especificar a ordem de precedência entre os operadores. Conforme as regras algébricas convencionais, as operações de multiplicação e divisão possuem precedência sobre adição e subtração. Essa ordem de avaliação pode também ser alterada utilizando parênteses como mecanismo de agrupamento. A simples inclusão de parênteses em REs não resolve adequadamente o problema de precedência, pois é impossível definir uma RE que reconheça todas as possíveis combinações de parênteses balanceados \cite[p. 71]{cooper2013engineering}. Em outras palavras, a linguagem reconhecida por uma RE não é suficiente para o reconhecimento sintático do compilador.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{Imagens/RE.png} % Ajuste o valor entre 0-1
+\caption{RE para reconhecer operações aritméticas entre duas variáveis, como a + b × c. Adaptado de \citeonline{cooper2013engineering}.}
+\label{fig:RE}
+\end{figure}
+
+Em vez de utilizar REs para verificar sentenças, o analisador sintático emprega uma gramática livre de contexto (CFG, do inglês \textit{Context-Free Grammar}), um conjunto de regras que descreve como as sentenças podem ser formadas. A coleção de todas as sentenças deriváveis a partir de G é denominada linguagem definida por G, representada por L(G) \cite[p. 71]{cooper2013engineering}. Esse mecanismo demonstra maior poder expressivo e complexidade na especificação de construções sintáticas, uma vez que, diferentemente das REs, é capaz de:
+
+\begin{itemize}
+
+\item Validar construções com parênteses balanceados; A regra Expr -> ( Expr ) na \hyperref[fig:CFG-regra]{Figura~\ref{fig:CFG-regra}} demonstra essa capacidade, permitindo que expressões sejam aninhadas recursivamente dentro de parênteses. O analisador sintático utiliza essa regra para garantir que, para cada parêntese de abertura, exista um correspondente de fechamento.
+
+\item Incorporar naturalmente regras de precedência de operadores, como ilustrado pelas regras de derivação na \hyperref[fig:CFG-regra]{Figura~\ref{fig:CFG-regra}}. Estas regras servem como blocos de construção para expressões. Através da criação de diferentes níveis hierárquicos para os operadores (algo que esta gramática simplificada não faz, mas que as CFGs permitem), é possível forçar o analisador a reconhecer a precedência correta, como avaliar a multiplicação antes da adição.
+
+\item Representar hierarquias sintáticas através de árvores de derivação, conforme exemplificado na \hyperref[fig:CFG-arvore]{Figura~\ref{fig:CFG-arvore}} para a expressão a + b × c. Nesta figura, a árvore ilustra a estrutura (a + b) × c. Isso ocorre porque a regra Expr -> Expr Op nome força uma avaliação da esquerda para a direita (associatividade à esquerda). A árvore mostra a operação de adição a + b sendo formada em um nível mais baixo e, em seguida, o resultado dessa subárvore é usado como operando para a multiplicação por c, que está no topo da árvore.
+
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{Imagens/CFG-regras.png} % Ajuste o valor entre 0-1
+\caption{Regras de derivação de uma CFG. Adaptado de \citeonline{cooper2013engineering}.}
+\label{fig:CFG-regra}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{Imagens/CFG-arvore.png} % Ajuste o valor entre 0-1
+\caption{Árvore sintática de uma CFG. Adaptado de \citeonline{cooper2013engineering}.}
+\label{fig:CFG-arvore}
+\end{figure}
+
+Como resultado da análise sintática, constrói-se uma AST utilizando as informações obtidas do programa fonte e do analisador léxico, assegurando a validação da estrutura sintática do código. Simultaneamente, a tabela de símbolos é atualizada com metadados essenciais sobre cada identificador, incluindo seu tipo de dado, o tamanho de sua representação em memória durante a execução e, no caso de \textit{arrays}, o número de dimensões e os intervalos indexados de cada dimensão \cite[p. 176]{cooper2013engineering}.
+
+\subsection{Análise Semântica}
+
+A Análise Semântica, como o próprio nome indica, tem como objetivo examinar o significado (semântica) do programa fonte. Para isso, ela utiliza a AST construída pelo Analisador Sintático, juntamente com as informações contidas na tabela de símbolos. Uma das principais funções da análise semântica é a verificação de tipos, na qual o compilador verifica a compatibilidade entre os operandos de cada operador \cite{aho2008compiladores}.
+
+Entre as regras semânticas mais comuns destacam-se:
+\begin{itemize}
+    \item A exigência de que índices de \textit{arrays} sejam do tipo inteiro;
+    \item A restrição de que operandos em operações aritméticas possuam tipos compatíveis;
+    \item A proibição de redeclaração de variáveis no mesmo escopo;
+    \item A verificação de que expressões condicionais retornem valores booleanos.
+\end{itemize}
+
+No final dessa fase, temos como resultado a Árvore Sintática Decorada, uma versão aprimorada da AST original. A grande diferença é que agora ela traz consigo uma informação importante: os tipos de dados de todos os identificadores usados no programa. Essas informações adicionais são vitais para as fases seguintes, especialmente para a geração de código, onde é necessário saber exatamente qual é o tipo de cada variável e expressão.
+
+\subsection{Geração de Código Intermediário}
+
+Durante todo o processo de compilação, podem ser produzidas uma ou mais IRs, as quais podem assumir diversas formas. As árvores sintáticas constituem um tipo de IR, assim como outros formatos de código em baixo nível ou semelhantes à linguagem de máquina. Esses códigos intermediários devem possuir duas propriedades essenciais: precisam ser facilmente gerados e simples de traduzir para a linguagem da máquina alvo \cite{aho2008compiladores}.
+
+O Robcmp utiliza o \textit{backend} da infraestrutura LLVM; por essa razão, sua IR segue o padrão LLVM-IR. O LLVM consiste em uma coleção modular e reutilizável de tecnologias de compilador, que proporciona um otimizador moderno e independente de alvo, além de suporte para a geração de código para diversas CPUs populares.
+
+A representação de código do LLVM foi projetada para ser utilizada de três formas distintas: como uma IR de compilador em memória, como uma representação em bitcode armazenada em disco (adequada para carregamento rápido por um compilador \textit{Just-In-Time}) e como uma linguagem de montagem de alto nível, legível por humanos \cite{LLVMLangRef}.
+
+A \hyperref[fig:LLVM-IR]{Figura~\ref{fig:LLVM-IR}} ilustra uma IR que realiza três operações sequenciais: (1) define uma variável contendo a \textit{string} ``hello world'', (2) declara a função externa ``puts'', responsável por imprimir \textit{strings} na saída padrão, e (3) implementa a função ``main'', que invoca ``puts'' para exibir a mensagem armazenada.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{Imagens/LLVM-IR.png} % Ajuste o valor entre 0-1
+\caption{Exemplo de LLVM-IR de um código ``hello world''. Adaptado de \citeonline{LLVMLangRef}.}
+\label{fig:LLVM-IR}
+\end{figure}
+
+\section{Backend}
+
+O papel do \textit{backend} é receber o código IR e produzir um código para a máquina-alvo. Ele seleciona as operações específicas da máquina-alvo para implementar cada operação da IR, determina a ordem mais eficiente de execução dessas operações e decide quais valores serão armazenados em registradores e quais residirão na memória \cite[p. 13]{cooper2013engineering}. Essas decisões podem ser ajustadas pelo desenvolvedor por meio de flags de otimização, como -Oz (otimização para tamanho extremo) e -Os (otimização para tamanho).
+
+Uma das vantagens do \textit{backend} da LLVM é seu suporte a diversas plataformas, incluindo CPUs (como x86 e ARM) e MCUs (como as famílias AVR e ARM Cortex-M). Isso permite que a RL também tenha portabilidade para um amplo espectro de \textit{hardware}. Por exemplo, é possível compilar código para microcontroladores específicos como o ATmega328P (da família AVR) ou o STM32f103c8t6 (baseado em ARM Cortex-M). Estes microcontroladores frequentemente compõem sistemas embarcados, como será detalhado a seguir.
+
+
+\section{Sistemas Embarcados}
+Segundo \citeonline{marwedel2021embedded}, os sistemas embarcados são sistemas de processamento de informação embutidos nos produtos que os contêm, ou seja, são parte de um sistema maior. Atualmente, estão presentes em inúmeras aplicações, como carros, trens, aviões, equipamentos industriais e de telecomunicações.
+
+Apesar da definição abrangente, é possível obter muitas informações a partir dessa descrição. Como um sistema embarcado faz parte de um sistema maior, ele é frequentemente dedicado a uma tarefa específica. Desse modo, processadores que controlam determinados sistemas de carros ou trens, por exemplo, sempre executam o mesmo \textit{software} \cite[p. 17]{marwedel2021embedded}. Esse \textit{software}, por ser o programa fundamental que gerencia o \textit{hardware} para essas funções específicas, é corretamente classificado como \textit{firmware}. 
+
+Além de serem parte fundamental de dispositivos individuais, esses componentes também formam o núcleo de aplicações de IoT. De acordo com \citeonline{Giusto2010IoT}, o termo \textit{Internet of Things} é um paradigma que abrange objetos físicos que se conectam à Internet para compartilhar informações. Tais informações podem ser capturadas por sensores, processadas por um microcontrolador e repassadas a outros dispositivos, a fim de que atinjam um objetivo em comum.
+
+Existe um grande potencial para aplicações de processamento de informações no contexto de IoT e sistemas embarcados. Sua enorme abrangência inclui áreas como eletrônica automotiva, aviônica, transporte ferroviário, engenharia marítima, engenharia mecânica, robótica, engenharia civil, recuperação de desastres, engenharia agrícola, setor de saúde, entre outras \cite{marwedel2021embedded}.
+
+Para que o processamento de informações ocorra, os dados devem ser processados por uma CPU. Nos sistemas embarcados, MCUs são frequentemente empregados para essa tarefa. A CPU integrada a um MCU não só permite executar todas as operações necessárias, como também possibilita que o sistema se beneficie das vantagens inerentes a um microcontrolador.
+
+\section{Microcontroladores}
+
+O núcleo da maioria dos Sistemas Embarcados é o seu centro de processamento, constituído por um MCU. Segundo \citeonline{hussain2016programming}, microcontroladores são computadores em um único chip: um circuito que integra uma unidade central de processamento, memória de acesso aleatório, alguma forma de memória apenas de leitura e portas de entrada/saída.
+
+Ao contrário dos computadores de uso geral (como computadores pessoais, \textit{smartphones} e \textit{tablets}), os MCUs são dedicados a tarefas específicas e executam uma única aplicação \cite{hussain2016programming}. O MCU é um componente eletrônico único; já os sistemas embarcados são o conjunto completo, que inclui, além do próprio MCU, outros elementos como sensores, atuadores, fontes de alimentação e interfaces de comunicação, todos trabalhando em conjunto para realizar uma função determinada.
+
+Algumas das famílias de microcontroladores mais comuns e que também possuem microcontroladores suportados pela RL são:
+
+\begin{itemize}
+
+    \item AVR: É uma família de microcontroladores de 8 bits, originalmente desenvolvida pela Atmel e atualmente produzida pela Microchip Technology. Estes microcontroladores combinam desempenho eficiente com baixo consumo de energia, oferecendo flexibilidade para uma vasta gama de aplicações embarcadas \cite{Microchip_AVR_MCUs}. A \hyperref[fig:ATmega328PB]{Figura~\ref{fig:ATmega328PB}} apresenta um exemplo de MCU com essa arquitetura.
+
+    \item ARM: A família de processadores Arm Cortex-M também é uma série de chips otimizados para eficiência energética e operações determinísticas. Trata-se de uma arquitetura amplamente utilizada em MCUs de 32 bits, uma alternativa atraente às arquiteturas de MCU de propósito geral de 8 bits e 16 bits \cite{ST_Arm_MCUs_2025}. A \hyperref[fig:STM32F103C8T6]{Figura~\ref{fig:STM32F103C8T6}} mostra uma placa de desenvolvimento que contém um MCU dessa família.
+
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.3\linewidth]{Imagens/ATmega328PB.png} % Ajuste o valor entre 0-1
+\caption{Microcontrolador de 8 bits ATmega328PB, anteriormente produzido pela Atmel, atualmente fabricado pela Microchip Technology como parte da família AVR. Possui 32KB de memória Flash, 2KB de SRAM e 27 portas de entrada/saída \citeonline{Microchip_AVR_MCUs}.}
+\label{fig:ATmega328PB}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.3\linewidth]{Imagens/STM32F103C8T6.jpg} % Ajuste o valor entre 0-1
+\caption{Placa de desenvolvimento com o MCU STM32F103C8T6, que possui 72 MHz de frequência máxima, 20 kB de memória SRAM, 128 kB de memória FLASH e 37 portas de entrada/saída \cite{STMicroelectronics:STM32F103x8_xB_2023}.}
+\label{fig:STM32F103C8T6}
+\end{figure}
+
+
+\section{Inteligência Artificial}
+
+Na última década, o assunto IA tornou-se popular e impossível de evitar em canais midiáticos como televisão, redes sociais e até mesmo em conversas cotidianas. Pode-se dizer que ele se tornou um termo \textit{mainstream}, expressão do inglês que designa um conteúdo considerado normal que é aceito pela maioria das pessoas \cite{Cambridge2024}. Essa tecnologia ganhou notoriedade devido ao seu notável crescimento e aplicação em diversas áreas da sociedade, consolidando-se como uma inovação promissora que marcou o início de uma nova era a partir da década de 2020.
+
+Apesar de ter se tornado comum e de fácil compreensão em discussões informais, o conceito de IA é frequentemente confundido com ML, como se fossem sinônimos. Segundo \citeonline{russell2020artificial}, o ramo da IA preocupa-se em estudar e construir entidades inteligentes capazes de computar como agir eficientemente em um amplo espectro de situações. Além disso, a IA atualmente abrange diversas subáreas, que vão desde capacidades gerais (como aprendizagem, raciocínio e percepção) até tarefas específicas, tais como jogar xadrez, provar teoremas matemáticos, dirigir veículos ou diagnosticar doenças. Por essa razão, a IA constitui um campo relevante para qualquer tarefa que exija raciocínio intelectual, abrangendo inúmeros domínios do conhecimento.
+
+Enquanto a IA possui um espectro mais abrangente e um objetivo filosófico mais amplo, o ML é um subcampo da IA que estuda como melhorar o desempenho com base na experiência. Ou seja, utiliza dados para realizar um treinamento, permitindo que o sistema computacional tome decisões baseadas em experiências passadas obtidas desses dados. Alguns sistemas de IA empregam métodos de ML, mas outros não \cite{russell2020artificial}.
+
+O resultado de treinamentos utilizando grandes bases de dados são modelos de ML, que podem ser executados em diferentes tipos de computadores, dependendo do \textit{hardware} requerido pelo modelo. Esses modelos podem ser executados na borda da rede (\textit{Edge AI}), isto é, em celulares, computadores pessoais e sistemas embarcados, ou na nuvem (\textit{Cloud AI}), isto é, em \textit{data centers} e servidores, para que o modelo possa ser acessado via Internet.
+
+Segundo \citeonline{SINGH202371}, \textit{Edge AI} se destaca em situações que precisam de baixa latência, privacidade e eficiência energética. Já a \textit{Cloud AI} é mais indicada para tarefas que exigem um grande poder de processamento e muito espaço de armazenamento. O uso de ML em MCUs se enquadra no conceito de IA na Borda, mas em um campo ainda mais específico e emergente: o TinyML, que é o foco principal deste trabalho.
+
+Um exemplo de modelo aplicável a TinyML é o Micro Speech\footnote{\url{https://github.com/tensorflow/tflite-micro/tree/main/tensorflow/lite/micro/examples/micro_speech}}, um modelo exemplo do repositório oficial do TFLM. O exemplo Micro Speech demonstra a execução de inferência para reconhecimento de palavras-chave (``sim'' e ``não''). O sistema consiste em dois modelos principais:
+
+\begin{itemize}
+    \item Pré-processador de áudio: Converte amostras de áudio bruto em dados espectrográficos; e
+    \item Modelo Micro Speech: Modelo compacto (<20 kB) que classifica as palavras-chave a partir dos espectrogramas.
+\end{itemize}
+
+Este projeto irá expandir a RL para suportar a execução de modelos de ML nos MCUs suportados pela linguagem. Dessa forma, será possível realizar inferências com maior privacidade e menor latência, uma vez que não será necessário acessar modelos hospedados em servidores na Internet, mantendo os dados estritamente no âmbito local.
+
+
+
+\subsection{Engines de Inferência}
+
+\textit{Engines} de Inferência (ou Motores de Inferência) são mecanismos que permitem a execução de um modelo de ML já treinado. Na fase de inferência, esse modelo é implementado, e o motor de inferência utiliza a ``inteligência'' aprendida para compreender e fazer previsões ou classificações sobre dados novos e não vistos.
+
+Geralmente, os mecanismos de inferência fazem parte de um \textit{framework} maior, que contém ferramentas tanto para o treinamento quanto para a inferência de modelos. Entre os exemplos mais famosos estão TensorFlow, PyTorch, Caffe, Keras e JAX.
+
+Esses \textit{frameworks} podem ser usados para treinar desde modelos simples até os mais complexos, mas a escolha do \textit{hardware} para o treinamento depende da necessidade de cada modelo. Enquanto modelos simples podem ser treinados utilizando computadores comuns, modelos mais complexos, como os de \textit{Deep Learning} (Aprendizagem Profunda), são muito mais exigentes e precisam ser treinados em computadores equipados com Unidades de Processamento Gráfico (GPUs, do inglês \textit{Graphics Processing Units}) potentes ou especializadas.
+
+\subsection{Engines para o TinyML}
+
+Considera-se TinyML qualquer aplicação capaz de executar modelos de ML com um consumo de energia extremamente baixo. Isso se alinha à premissa destacada por \citeonline{warden2019tinyml}, que afirma: ``Se você consegue executar um modelo de rede neural com um custo energético abaixo de 1 mW, isso torna possíveis muitas aplicações completamente novas'', definindo assim o potencial e o escopo do TinyML.
+
+No contexto do TinyML, diferentemente do contexto geral de ML, os \textit{frameworks} disponíveis para o desenvolvimento possuem somente os mecanismos para inferência. Afinal, o \textit{hardware} de dispositivos como um microcontrolador não é suficiente para o treinamento de um modelo. A fase de treinamento, nesses casos, é feita em uma máquina de desenvolvimento, para que, depois, apenas a inferência seja realizada no dispositivo de borda \cite{soro2021tinyml}.
+
+\begin{sloppypar}
+Para o desenvolvimento de TinyML em microcontroladores, há diversos \textit{frameworks} disponíveis, incluindo TFLM\footnote{Documentação do TFLM: \url{https://github.com/tensorflow/tflite-micro}} (Google), uTensor \footnote{Documentação do uTensor: \url{https://github.com/uTensor/uTensor}} (ARM), MicroTVM\footnote{Documentação do MicroTVM: \url{https://daobook.github.io/tvm/docs/topic/microtvm/index.html}} (uTVM), STM32Cube.AI\footnote{Documentação do STM32Cube.AI: \url{https://stm32ai.st.com/stm32-cube-ai/}} (STMicroelectronics), NanoEdge AI Studio\footnote{Site do NanoEdge AI Studio: \url{https://stm32ai.st.com/nanoedge-ai/}} (STMicroelectronics), Eloquent TinyML\footnote{Documentação do Eloquent TinyML: \url{https://github.com/eloquentarduino/EloquentTinyML}}, emlearn\footnote{Documentação do emlearn: \url{https://github.com/emlearn/emlearn}} e EON compiler\footnote{Documentação do EON Compiler: \url{https://docs.edgeimpulse.com/docs/edge-impulse-studio/deployment/eon-compiler}} (Edge Impulse). Embora cada um apresente suas particularidades e suporte a diferentes famílias de MCUs, o TFLM foi selecionado para este trabalho por suas vantagens e conveniência, alinhando-se aos interesses do projeto. 
+\end{sloppypar}
+
+Dentre as conveniências estão o suporte para a família ARM Cortex-M do Robcmp e do TFLM, a existência de modelos já treinados em formato .tflite que podem ser aproveitados, e uma licença que permite uso gratuito, modificação e distribuição, a qual pode ser encontrada no repositório do GitHub, que aponta para a licença Apache License, Version 2.0\footnote{Disponível em: \url{https://www.apache.org/licenses/LICENSE-2.0}}. Dentre os interesses do projeto estão: manter o código aberto, buscar expandir para outras plataformas futuramente e o foco em portabilidade e suporte a \textit{hardware} heterogêneo.
+
+
+\subsection{TensorFlow Lite Micro}
+
+Conforme \citeonline{MLSYS2021_6c44dc73}, o TFLM possui uma série de vantagens que podem ser observadas após a análise das decisões de design e implementação. Dentre essas vantagens, as mais pertinentes e em conformidade com o objetivo da RL são:
+
+\begin{itemize}
+    \item Código Aberto: TFLM é um \textit{framework} de inferência TinyML de código aberto.
+    \item Abordagem Baseada em Interpretador: Utiliza um interpretador que oferece flexibilidade e portabilidade, facilitando a adaptação a novas aplicações e recursos. Diferente da geração de código, o interpretador permite atualizar modelos substituindo apenas o arquivo/área de memória do modelo, sem recompilar tudo.
+    \item Independência de \textit{hardware}: Minimiza o uso de dependências externas e requisitos de biblioteca para ser independente em relação ao \textit{hardware}.
+    \item Gerenciamento de Memória Eficiente: Não depende de alocação dinâmica; utiliza uma ``arena'' de memória fornecida pela aplicação.
+    \item Reutilização de Ferramentas TensorFlow: Integra-se fortemente com o ambiente de treinamento do TensorFlow e reutiliza as ferramentas e \textit{kernels} de referência do TensorFlow Lite, facilitando a conversão, otimização e garantindo um ambiente harmonizado.
+    \item Suporte a Otimizações: Suporta quantização (como 8 bits) e outras otimizações (\textit{folding}, remoção de \textit{dropout}) através da \textit{toolchain} do TensorFlow Lite.
+\end{itemize}
+
+\section{Interoperabilidade entre linguagens de programação}
+
+Conforme \citeonline{ISO_IEC_IEEE_24765_2017}, interoperabilidade pode ser definida como ``O grau em que dois ou mais sistemas, produtos ou componentes podem trocar informações e usar tais informações''. Em essência, a interoperabilidade é a capacidade de diferentes sistemas ou componentes de \textit{software} trocarem informações e utilizarem as funcionalidades uns dos outros, mesmo que tenham sido desenvolvidos com tecnologias, plataformas ou linguagens de programação distintas.
+
+A interoperabilidade pode ser alcançada de diferentes maneiras, dependendo das tecnologias ou linguagens de programação utilizadas no projeto. Ela pode ocorrer entre diferentes linguagens de programação, por exemplo, C e Python, por meio de módulos existentes, como ctypes\footnote{Disponível em: \url{https://docs.python.org/3/library/ctypes.html}} e cffi\footnote{Disponível em: \url{https://cffi.readthedocs.io/en/latest/}}. Nesses casos, a interoperabilidade pode ser interpretada como Interface de Função Estrangeira (FFI, do inglês \textit{Foreign Function Interface}).
+
+No contexto deste projeto, a RL se integrará ao TFLM. Para que a RL execute as funções de inferência da API C++, será elaborada uma API intermediária ou \textit{wrapper}, na linguagem C, facilitando a interoperabilidade entre esses dois componentes em tempo de ligação (\textit{link-time}), ou seja, o código em RL, compilado com o robcmp, poderá ser ligado ao código em C++ para o TFLM, compilado usando um compilador padrão C++.
+
+\section{Robotics Language and Compiler}
+
+Desenvolvidos na UFJ em 2018, os trabalhos de \citeonline{AnaliseRobEducacional} e \citeonline{RobEducacional} integraram o projeto ``Especificação e Construção de Protótipos Funcionais de Kits Robóticos de Baixo Custo para uso em Processos de Ensino-Aprendizagem'' (PI02361-2018), que visava criar um ecossistema de robótica educacional de baixo custo. Sousa dedicou-se à especificação do \textit{hardware}, avaliando componentes por preço e desempenho, enquanto Rodrigues criou o \textit{software}, desenvolvendo a Linguagem para Robótica Educacional (LRE) em português e seu respectivo compilador para facilitar a programação. Posteriormente, \citeonline{Majestic} realizou adaptações e melhorias na linguagem, como a mudança da língua para o inglês e a adição de funcionalidades como funções com parâmetros, vetores e matrizes estáticas.
+
+Posteriormente, surgiu o projeto denominado ``Robotics Language: Uma Linguagem de Programação de Propósito Específico para Microcontroladores'' (PI05974-2024). Trabalhos relacionados a esse projeto implementam funcionalidades ainda inexistentes na biblioteca padrão da linguagem. Por exemplo, \citeonline{Ryan} implementou funções matemáticas, como seno e cosseno. Já \citeonline{Gabriel} adicionou funções para manipulação de \textit{strings}.
+
+A RL busca isolar as especificidades de microcontroladores, fornecendo uma camada de abstração de \textit{hardware} dentro do próprio compilador, em vez de depender de \textit{frameworks} ou bibliotecas externas. Essa abordagem permite que os desenvolvedores escrevam o código uma única vez, eliminando a necessidade de adaptar o código para cada \textit{hardware} através de macros condicionais. Ao aproveitar a análise semântica do compilador, é possível prevenir erros comuns encontrados no desenvolvimento
+de \textit{firmware} em linguagens não específicas de domínio, como C/C++ \cite{borges_robcmp}. Além disso, ela possui suporte a interfaces, tipos complexos (com variáveis e métodos, similar a classes da orientação a objetos), além de um sistema de tipagem implícito.
+
+Seu compilador, o Robcmp, foi escrito em C++ e utilizou ferramentas como o Flex\footnote{Disponível em: \url{https://github.com/westes/flex}} (versão 2.6.4) para análise léxica e o Bison\footnote{Disponível em: \url{https://www.gnu.org/software/bison}} (versão 3.8.2) para análise sintática. Para a interpretação da representação intermediária, foi utilizado o \textit{backend} oferecido pelo LLVM. Desde o começo do projeto, a versão do LLVM utilizada é constantemente atualizada, para que o compilador se mantenha sempre atualizado.
+
+Para o desenvolvimento de programas e \textit{firmwares} na Robotics Language é recomendado o uso do editor de texto e IDE (\textit{Integrated Development Environment}) Visual Studio Code\footnote{Disponível em: \url{https://code.visualstudio.com}}, devido ao seu fácil acesso a extensões. A principal extensão necessária para o desenvolvimento é a PlatformIO\footnote{Disponível em: \url{https://platformio.org/}}. Ela é responsável pela execução, depuração e carregamento dos \textit{firmwares}. Outra extensão essencial é a RobCmpSyntax, foi criada com o intuito de ajudar o programador a visualizar a estrutura de seu código a partir de cores diferentes para a sintaxe.
+
+
+% ---------------------------------------------------------------------------
+% \section{Considerações Finais}
+% Tanto a seção Introdução como a seção Considerações Finais são opcionais na construção de um texto monográfico. Porém deve-se optar por um padrão. Coloca-se em todos os capítulos ou em nenhum...
+
+% \section{Formatação da monografia}
+% \indent Os textos devem ser apresentados em papel branco, formato A4. Deverá ser digitado em tinta cor preta, com exceção de ilustrações. As folhas deverão apresentar margem esquerda e superior de 3 cm; direita e inferior de 2 cm. De forma geral este modelo (template) apresenta todas formatações necessárias. 
+% A tabela \ref{tab1} é um exemplo. 
+
+
+% \begin{table}[htp]
+% \caption{Modelo de Tabela com referência \cite{hancock1995virtual}}  
+%  \begin{center}
+%   \begin{tabular}{c|c|c|c}
+%    \hline
+%    Características & C1 & C2 & C3 \\
+%    \hline
+%    1000 & 2000 & 3000 & 1000 \\
+%    4000 & 2000 & 3000 & 1000 \\
+%    5000 & 3000 & 1000 & 1000 \\
+%    \hline
+%   \end{tabular}
+%   \label{tab1}
+%  \end{center}
+% \end{table}
+
+ 
+% Tabela \ref{tab1} mostra .....
+
+% \begin{figure}[htp]
+% \centering
+% \includegraphics[scale=0.9]{img/ModeloImagem.jpg}
+% \caption{Modelo de Imagem \cite{pimentel1995}}
+% \label{modeloimg}
+% \end{figure}
+
+ 
+
+

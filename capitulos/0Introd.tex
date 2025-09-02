@@ -1,0 +1,59 @@
+\chapter[Introdução]{Introdução}\label{cap:introducao}
+\addcontentsline{toc}{chapter}{INTRODUÇÃO}
+
+\section{Motivação (objeto de estudo e problema)}
+O Machine Learning (ML) está se tornando cada vez mais comum em diversas áreas da sociedade, como em veículos autônomos, reconhecimento facial e monitoramento de saúde. Esse recurso inovador pode estar presente não somente em supercomputadores, celulares e robôs, mas também em sistemas embarcados. Aplicações nessas plataformas já são uma realidade, como apresentado por \citeonline{RoadMarkings}, que implementou um modelo de Inteligência Artificial (IA) para melhorar a identificação de marcações viárias em carros autônomos, e por \citeonline{8274968}, que utilizou circuitos dedicados e plataformas embarcadas para detectar o estresse humano. No entanto, a adoção de ML em microcontroladores de baixo custo ainda é um campo pouco explorado, devido a limitações de \textit{hardware} e falta de ferramentas intuitivas para o desenvolvimento.
+
+Ao contrário do que se imagina, microcontroladores (MCU, do inglês \textit{Microcontroller Unit}) podem ser encontrados em diversos aparelhos cotidianos como eletrodomésticos, automóveis, dispositivos de saúde e lâmpadas inteligentes. Qualquer dispositivo que meça, armazene, controle, calcule ou exiba informações é um candidato a ter um microcontrolador embutido \cite{axelson1997microcontroller}. Eles podem ser definidos como um computador em um único circuito integrado que inclui uma \textit{Central Processing Unit} (CPU), \textit{Random Access Memory} (RAM), alguma forma de \textit{Read-Only Memory} (ROM) e portas de \textit{Input/Output} (I/O) \cite{hussain2016programming}. Frequentemente, o termo pode ser utilizado como sinônimo para sistema embarcado, porém existe uma distinção clara entre os dois conceitos. Enquanto o MCU refere-se apenas ao \textit{hardware}, o sistema embarcado compreende o sistema completo (\textit{hardware} + \textit{firmware}), já pronto para uso.
+
+O uso de sistemas embarcados também está fortemente ligado à ideia de \textit{Internet of Things} (IoT), uma rede de dispositivos eletrônicos de baixo custo onde a comunicação e a coleta de dados ocorrem automaticamente, por meio de protocolos de comunicação \cite{microcontrolerforIoT}. Atualmente, esse tipo de sistema já é amplamente utilizado para captura e processamento de dados em projetos de IoT como cidades inteligentes, automação residencial e agricultura de precisão. Quando o projeto envolve IA, após a captura dos dados, eles devem ser enviados para essa IA para uma tomada de decisão. Isso pode ocorrer de duas formas: utilizando \textit{Cloud AI} ou \textit{Edge AI}. 
+
+\textit{Edge AI} (Inteligência Artificial na Borda) refere-se à prática de realizar computações de IA próximo aos usuários na borda da rede, em vez de em localizações centralizadas como os \textit{data centers} de provedores de serviços em nuvem (\textit{Cloud AI}) \cite{SINGH202371}. Segundo \citeonline{SINGH202371}, \textit{Edge AI} se destaca em situações que precisam de baixa latência, privacidade e eficiência energética. Já a \textit{Cloud AI} é mais indicada para tarefas que exigem um grande poder de processamento e muito espaço de armazenamento. O uso de ML em MCUs se enquadra no conceito de IA na borda, mas em um campo ainda mais específico e emergente: o \textit{Tiny Machine Learning} (TinyML).
+
+De acordo com \citeonline{warden2019tinyml}, ``Se você consegue executar um modelo de rede neural com um custo energético abaixo de 1 mW, isso torna possíveis muitas aplicações completamente novas''. Essa é a principal premissa e também definição do termo TinyML, desse modo qualquer aplicação que consiga executar um modelo a um custo de energia baixíssimo pode ser considerada como TinyML. Esse número pode parecer arbitrário (1mW), mas, em termos concretos, significa que um dispositivo alimentado por uma bateria de botão pode funcionar por um ano. Isso resulta em um produto que é pequeno o suficiente para ser instalado em qualquer ambiente e capaz de operar por um tempo útil sem intervenção humana \cite{warden2019tinyml}.
+
+Para a execução de TinyML, além dos microcontroladores convencionais, podem ser utilizados outros circuitos integrados (CI), como ASICs (\textit{Application-Specific Integrated Circuits}), FPGAs (\textit{Field-Programmable Gate Arrays}) e DSPs (\textit{Digital Signal Processors}). Apesar da existência de diferentes opções, os MCUs mostram-se mais vantajosas por geralmente serem menores, apresentarem baixíssimo consumo de energia e possuírem custo extremamente baixo. Embora o \textit{hardware} especializado proporcione o melhor desempenho para TinyML, microcontroladores de propósito geral oferecem maior flexibilidade, como discutido por \citeonline{abadade2023comprehensive}.
+
+Devido à falta de poder computacional, executar modelos de ML em sistemas embarcados não é uma tarefa fácil; no entanto, segundo \citeonline{soro2021tinyml}, existem três formas principais de realizar esse feito:
+
+\begin{itemize}
+    \item Codificação Manual, implementação manual do modelo de ML diretamente em código de baixo nível, como C ou C++. É uma maneira trabalhosa, demorada e propensa a erros, devido ao grau de complexidade.
+    \item Geração automática de código, uso de ferramentas para converter um modelo pré-treinado em código otimizado para o dispositivo embarcado. A ferramenta converte, por exemplo, um arquivo .tflite em código C ou C++.
+    \item Interpretador de ML, é utilizado um interpretador para executar o modelo diretamente no dispositivo.
+\end{itemize}
+
+Várias ferramentas para TinyML já existem no mercado, algumas são produzidas por grandes empresas como a Google, outras são desenvolvidas por grupos menores de desenvolvedores. 
+Cada uma delas possui em sua estrutura uma técnica de geração automática de código ou um interpretador de ML. O objetivo de um \textit{framework} TinyML é fornecer uma solução abrangente para a construção e implantação de modelos de ML em dispositivos de baixo consumo de energia, facilitando o desenvolvimento de aplicações de \textit{edge computing} por desenvolvedores \cite{abadade2023comprehensive}.
+
+Desenvolvido pela Google, o TensorFlow Lite\footnote{Documentação do TensorFlow Lite: \url{https://www.tensorflow.org/lite/guide?hl=pt-br}} foi lançado em 2017 e se destacou como um dos pioneiros em \textit{Edge AI}, tendo grande importância na democratização do ML em dispositivos limitados. Atualmente, seu nome foi alterado para LiteRT\footnote{Documentação do Lite RT: \url{https://ai.google.dev/edge/litert?hl=pt-br}}, um produto oficial da Google AI Edge, uma mudança estratégica da empresa para unificar ferramentas de ML no dispositivo. Agora, o LiteRT consegue cobrir múltiplos \textit{frameworks} de treinamento, como JAX\footnote{Documentação do JAX: \url{https://docs.jax.dev/en/latest/}}, Keras\footnote{Site do Keras: \url{https://keras.io}}, PyTorch\footnote{Site do PyTorch: \url{https://pytorch.org}} e TensorFlow. Apesar das atualizações no nome e na amplitude do produto, a ferramenta oficial da Google para desenvolvimento de TinyML em microcontroladores teve seu nome mantido como TensorFlow Lite Micro (TFLM).
+
+Conforme o trabalho de \citeonline{MLSYS2021_6c44dc73}, o \textit{framework} trabalha com alocação estática de memória, possui um interpretador de ML com menos de 2 kB e já foi validado em diversas arquiteturas, como Arm Cortex-M, ESP32 e DSPs. Sua abordagem baseada em interpretador (que lê o modelo .tflite e executa as operações nele contidas) viabiliza a atualização de modelos ``em campo'', ou seja, em dispositivos que já estão em posse do usuário final ou instalados em seu local de operação. Isso ocorre porque o \textit{firmware} pode ser programado para carregar o modelo de uma área de memória separada, como uma partição Flash, permitindo a substituição do arquivo do modelo sem a necessidade de recompilar o \textit{firmware}.
+
+No contexto dos sistemas embarcados, o projeto Robotics Language (PI05974-2024), realizado na Universidade Federal de Jataí (UFJ), desenvolve uma linguagem de programação especializada no campo da robótica e dos microcontroladores. Essa iniciativa é uma evolução de um projeto anterior que lidava com kits robóticos educacionais (PI02361-2018) e busca, de maneira geral, tornar a programação em microcontroladores mais simples e acessível.
+
+Para realizar tal objetivo, a linguagem busca isolar as especificidades de microcontroladores, fornecendo uma camada de abstração de \textit{hardware} dentro do próprio compilador, em vez de depender de \textit{frameworks} ou bibliotecas externas. Essa abordagem permite que os desenvolvedores escrevam o código uma única vez, eliminando a necessidade de adaptar o código para cada \textit{hardware} através de macros condicionais. Ao aproveitar a análise semântica do compilador, é possível prevenir erros comuns encontrados no desenvolvimento de \textit{firmware} em linguagens não específicas de domínio, como C/C++ \cite{borges_robcmp}.
+
+\section{Objetivo do Trabalho}
+Este trabalho teve como objetivo integrar o TFLM à linguagem, estendendo sua sintaxe para viabilizar a execução de modelos de ML nos microcontroladores já compatíveis com o \textit{framework} e suportados pela linguagem. Os objetivos específicos foram:
+\begin{itemize}
+    \item Adicionar novas palavras-chave, regras sintáticas e semânticas na linguagem RL para a inferência de modelos de TinyML;
+    \item Implementar um \textit{wrapper} parcial da API TFLM em C, para possibilitar a ligação do TFLM com o código compilado em RL;
+    \item Validar a integração por meio de testes funcionais com modelos de IA existentes e já treinados; e
+    \item Realizar uma análise comparativa de eficiência entre a solução em RL e uma implementação nativa em C++.
+\end{itemize}
+
+\section{Contribuição do Trabalho}
+A principal contribuição deste trabalho é a extensão da RL para viabilizar o desenvolvimento de aplicações de ML em microcontroladores de forma nativa. Ao integrar o \textit{framework} TFLM, este projeto dota a linguagem de uma sintaxe de alto nível que abstrai a complexidade da inferência. Dessa forma, os desenvolvedores podem aliar o poder do TinyML aos benefícios já oferecidos pela RL, como o desenvolvimento de firmware com baixo acoplamento, alta coesão e elevada manutenibilidade.
+
+
+
+% Esqueleto Inicial do modelo de TCC 2
+% \section{Motivação (objeto de estudo e problema)}
+% \section{Objetivo do Trabalho}
+% \section{Referencial Teórico Resumido}
+% \section{Contribuição do Trabalho}
+% \section{Organização da Monografia}
+
+
+
+
