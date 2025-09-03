@@ -10,9 +10,8 @@
 *.idx
 *.ilg
 *.ind
-*.synctex.gz
 *.nav
 *.snm
 *.fdb_latexmk
 *.fls
-*.pdf
+
