@@ -15,8 +15,7 @@ Os novos recursos e funcionalidades implementados diretamente na linguagem RL fo
 O ambiente de desenvolvimento foi o Visual Studio Code (versão 1.101), com o auxílio de duas extensões principais: o PlatformIO (versão 6.1.18), para depurar e exportar os \textit{firmwares} para as placas, e o RobCmpSyntax (versão 1.0), que fornece o realce de sintaxe para arquivos .rob. Para a fase de testes e simulações, foi empregado o emulador QEMU\footnote{Disponível em: \url{https://www.qemu.org}} (versão 10.0.2), capaz de emular os microcontroladores da família ARM utilizados no projeto.
 
 \subsection{Hardware}
-A máquina de desenvolvimento utilizada foi um \textit{notebook} Lenovo IdeaPad 3 15ITL6, equipado com um processador Intel® Core™ i7-1165G7, 16 GB de RAM e sistema operacional Ubuntu 24.04.1 LTS. Além da máquina de desenvolvimento, a execução e validação das aplicações ocorreram em placas com microcontroladores da família ARM, STM32F401RE e o STM32F405RGT6.
-
+A máquina de desenvolvimento utilizada foi um \textit{notebook} Lenovo IdeaPad 3 15ITL6, equipado com processador Intel® Core™ i7-1165G7, 16 GB de RAM e sistema operacional Ubuntu 24.04.1 LTS. Além da máquina de desenvolvimento, a execução e validação das aplicações ocorreram em uma placa com o microcontrolador STM32F407VET6, da família ARM, popularmente chamada de Black STM32F407VET6. Essa placa conta com um processador ARM Cortex-M4 rodando a 168 MHz, 192 KB de RAM e 512 KB de memória Flash.
 
 \section{Projeto e Arquitetura da Solução}
 Para que a integração fosse desenvolvida corretamente, foi fundamental definir quais funções da biblioteca TFLM seriam utilizáveis no Robcmp. Essa tarefa também incluiu a determinação de quais funcionalidades seriam nativas da linguagem e quais pertenceriam à biblioteca padrão.
@@ -43,33 +42,30 @@ A \hyperref[fig:nova_sintaxe]{Figura~\ref{fig:nova_sintaxe}} exibe um trecho de 
 % }
 % \end{lstlisting}
 
+%// Uma implementacao de microcontrolador sera vinculada aqui.
+%mmcu = mcu();
+
 \lstset{language=rob,morekeywords=[1]{portmode, mcu ,digitalport, model, invoke}}
 \begin{figure}[H] % Você pode usar [H], [tp], etc.
 \centering
 \begin{lstlisting}
-// Uma implementacao de microcontrolador sera vinculada aqui.
-mmcu = mcu();
-
 int16 main() {
-	
 	// 1. Define os dados de entrada e um buffer para a saida.
 	input = {0.77, 1.57, 2.3, 3.14};
 	output = {5:0.0};
 
 	// 2. Carrega o modelo
 	model meu_modelo("meu_modelo.tflite", arena_size: 4096);
-	
+
 	// 3. Fornece a entrada para o modelo.
 	meu_modelo.input = input;
 
 	// 4. Executar a inferencia.
 	invoke meu_modelo;
-
+	
 	// 5. Obtem o resultado.
 	output = meu_modelo.output;
-
 	//Resto do codigo
-	
 }
 \end{lstlisting}
 \caption{Exemplo de código com a nova sintaxe para inferência de um modelo tflite.}
