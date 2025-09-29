@@ -2,22 +2,46 @@
 
 \section{Introdução}
 
-Neste capítulo, são apresentadas publicações relacionadas a este trabalho, que abordam temas como, decisões de design de ferramentas para \textit{TinyML} e \textit{Edge AI}.
+Neste capítulo, são apresentadas publicações relacionadas a este trabalho, abordando decisões de design de ferramentas para \textit{TinyML} e \textit{Edge AI} no contexto de MCUs. A busca dos trabalhos foi realizada por meio de uma revisão narrativa de literatura (RNL), utilizando como ponto inicial o conjunto de trabalhos já defendidos dentro do projeto Robcmp \cite{Ryan, Gabriel, Majestic}, seguido pela busca de trabalhos correlatos no PlatformIO Registry, uma plataforma que reúne e facilita o acesso a bibliotecas, frameworks e ferramentas para desenvolvimento embarcado \cite{PlatformIORegistry}.
 
-\section{Critérios de busca}
+% \section{Critérios de busca}
 
 \section{Metodologia de análise}
 
-\subsection{Critério 1 (C1)}
-\subsection{Critério 2 (C2)}
-\subsection{Critério 3 (C3)}
-\subsection{Critério 4 (C4)}
+Para garantir uma avaliação estruturada dos trabalhos selecionados, cada critério utilizado na análise é apresentado como uma subseção a seguir:
+
+\subsection{Suporte a diferentes MCUs (SUP)}
+Avalia se a ferramenta ou framework oferece compatibilidade com múltiplas famílias de microcontroladores, como STM32, ESP32, AVR, PIC, MSP430, Renesas RX, NXP LPC, entre outras, ampliando sua aplicabilidade em projetos embarcados.
+
+\subsection{Facilidade de uso e documentação (USO)}
+Considera a existência de documentação clara, exemplos práticos e facilidade de integração, aspectos essenciais para adoção por desenvolvedores.
+
+\subsection{Recursos de otimização (OPT)}
+Analisa se o trabalho apresenta técnicas para otimização de modelos, como quantização, compressão ou aceleração por hardware, visando eficiência em dispositivos com recursos limitados.
+
+\subsection{Suporte a treinamento e embarcado (TRE)}
+Verifica se a ferramenta permite tanto o treinamento quanto a inferência diretamente no dispositivo embarcado, ampliando as possibilidades de uso em aplicações reais.
+
 
 \section{Trabalhos analisados}
-Com base nos critérios apresentados na seção anterior, foram analisados X trabalhos...
+Com base nos critérios apresentados na seção anterior, foram analisados X trabalhos, conforme descrito a seguir:
 
-\subsection{Trabalho 1 (T1)}
-\subsection{Trabalho 2 (T2)}
+\subsection{TensorFlow Lite Micro: Embedded Machine Learning for TinyML Systems}
+O trabalho de \citeonline{MLSYS2021_6c44dc73} apresenta as principais decisões por trás do TFLM, o framework de inferência de ML da Google escolhido para este projeto. Seu grande diferencial é a abordagem baseada em um interpretador, que oferece flexibilidade e portabilidade para lidar com a fragmentação do ecossistema de hardware embarcado.
+
+Em relação ao seu suporte a diferentes MCUs, o TFLM foi projetado para ser altamente portável e agnóstico em relação ao hardware, tendo sido validado em diversas arquiteturas, como ARM Cortex-M, ESP32 e vários DSPs. A especialização para plataformas específicas é alcançada permitindo que fabricantes de hardware contribuam com kernels de operadores otimizados (por exemplo, a biblioteca CMSIS-NN da Arm), que podem ser integrados de forma modular. Esse tipo de biblioteca implementa os operadores de ML mais comuns, como convoluções e funções de ativação, aproveitando as instruções específicas do processador para melhorar o desempenho. Dessa forma, os kernels comuns de TinyML, como ADD, GATHER, SOFTMAX, CONV2D, FULLYCONNECTED, MAXPOOL2D, entre outros, são executados de forma otimizada em processadores ARM Cortex-M.
+
+Quanto à facilidade de uso e documentação, o TFLM se integra fortemente ao ecossistema TensorFlow, reutilizando suas ferramentas para conversão e otimização de modelos, o que facilita a adoção por desenvolvedores familiarizados com TensorFlow. Porém, seu fluxo de desenvolvimento pode ser um pouco complexo para iniciantes, exigindo conhecimento prévio de C++, CMake, compilação cruzada e alta familiaridade com o modelo de ML que será utilizado. A documentação oficial é abrangente, incluindo guias de início rápido, tutoriais e exemplos de código, o que ajuda a mitigar minimamente a curva de aprendizado.
+
+O framework também oferece algumas técnicas de otimização herdadas do TensorFlow Lite, como a quantização de modelos para 8 bits, que reduz o tamanho do modelo e o consumo de memória. Além disso, inclui um "Planejador de Memória" que aplica um algoritmo de \textit{bin-packing} para reutilizar buffers de tensores intermediários, reduzindo substancialmente o pico de uso de RAM. Em vez de alocar memória para todos os tensores intermediários que um modelo precisa, esse algoritmo consegue reutilizar buffers de tensores que não são mais necessários. Ademais, o uso de kernels otimizados, como o CMSIS-NN, demonstrou melhorias de desempenho superiores a 4x em comparação com as implementações de referência.
+
+Como o TFLM é um framework de inferência, ele não oferece suporte ao treinamento de modelos diretamente no dispositivo embarcado. O fluxo recomendado envole o treinamento do modelo em um ambiente mais poderoso, seguido pela conversão do modelo treinado para o formato TFLite e sua implantação no dispositivo embarcado para inferência.
+
+\textbf{Comentário Luiz: Ver se esta repetindo muita coisa dobre o TFLM no trabalho, (introdução, Referencial, Trabalhos relacionados)}
+
+\subsection{AIfES: A Next-Generation Edge AI Framework}
+O trabalho de \citeonline{AIfES2022} apresenta o Artificial Intelligence for Embedded Systems (AIfES), um framework escrito em C de código aberto para Edge AI, tanto para o treinamento quanto para a inferência de modelos. Ele surge como uma alternativa ao TFLM, com foco em ter uma arquitetura de software altamente modular, projetada para facilitar a integração de otimizações e aceleradores de hardware customizados.
+
 \subsection{Trabalho 3 (T3)}
 
 \section{Resumo Comparativo}
