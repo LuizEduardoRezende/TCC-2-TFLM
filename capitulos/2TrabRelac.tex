@@ -31,46 +31,68 @@ O trabalho de \citeonline{MLSYS2021_6c44dc73} apresenta as principais decisões 
 
 Em relação ao seu suporte a diferentes MCUs, o TFLM foi projetado para ser altamente portável e agnóstico em relação ao hardware, tendo sido validado em diversas arquiteturas, como ARM Cortex-M, ESP32 e vários DSPs. A especialização para plataformas específicas é alcançada permitindo que fabricantes de hardware contribuam com kernels de operadores otimizados (por exemplo, a biblioteca CMSIS-NN da Arm), que podem ser integrados de forma modular. Esse tipo de biblioteca implementa os operadores de ML mais comuns, como convoluções e funções de ativação, aproveitando as instruções específicas do processador para melhorar o desempenho. Dessa forma, os kernels comuns de TinyML, como ADD, GATHER, SOFTMAX, CONV2D, FULLYCONNECTED, MAXPOOL2D, entre outros, são executados de forma otimizada em processadores ARM Cortex-M.
 
-Quanto à facilidade de uso e documentação, o TFLM se integra fortemente ao ecossistema TensorFlow, reutilizando suas ferramentas para conversão e otimização de modelos, o que facilita a adoção por desenvolvedores familiarizados com TensorFlow. Porém, seu fluxo de desenvolvimento pode ser um pouco complexo para iniciantes, exigindo conhecimento prévio de C++, CMake, compilação cruzada e alta familiaridade com o modelo de ML que será utilizado. A documentação oficial é abrangente, incluindo guias de início rápido, tutoriais e exemplos de código, o que ajuda a mitigar minimamente a curva de aprendizado.
+Quanto à facilidade de uso e documentação, o TFLM se integra fortemente ao ecossistema \textit{TensorFlow}, reutilizando suas ferramentas para conversão e otimização de modelos, o que facilita a adoção por desenvolvedores familiarizados com \textit{TensorFlow}. Porém, seu fluxo de desenvolvimento pode ser um pouco complexo para iniciantes, exigindo conhecimento prévio de C++, \textit{CMake}, compilação cruzada e alta familiaridade com o modelo de ML que será utilizado. A documentação oficial é abrangente, incluindo guias de início rápido, tutoriais e exemplos de código, o que ajuda a mitigar minimamente a curva de aprendizado.
 
-O framework também oferece algumas técnicas de otimização herdadas do TensorFlow Lite, como a quantização de modelos para 8 bits, que reduz o tamanho do modelo e o consumo de memória. Além disso, inclui um "Planejador de Memória" que aplica um algoritmo de \textit{bin-packing} para reutilizar buffers de tensores intermediários, reduzindo substancialmente o pico de uso de RAM. Em vez de alocar memória para todos os tensores intermediários que um modelo precisa, esse algoritmo consegue reutilizar buffers de tensores que não são mais necessários. Ademais, o uso de kernels otimizados, como o CMSIS-NN, demonstrou melhorias de desempenho superiores a 4x em comparação com as implementações de referência.
+O framework também oferece algumas técnicas de otimização herdadas do \textit{TensorFlow Lite}, como a quantização de modelos para 8 bits, que reduz o tamanho do modelo e o consumo de memória. Além disso, inclui um "Planejador de Memória" que aplica um algoritmo de \textit{bin-packing} para reutilizar buffers de tensores intermediários, reduzindo substancialmente o pico de uso de RAM. Em vez de alocar memória para todos os tensores intermediários que um modelo precisa, esse algoritmo consegue reutilizar buffers de tensores que não são mais necessários. Ademais, o uso de kernels otimizados, como o CMSIS-NN, demonstrou melhorias de desempenho superiores a 4x em comparação com as implementações de referência.
 
-Como o TFLM é um framework de inferência, ele não oferece suporte ao treinamento de modelos diretamente no dispositivo embarcado. O fluxo recomendado envole o treinamento do modelo em um ambiente mais poderoso, seguido pela conversão do modelo treinado para o formato TFLite e sua implantação no dispositivo embarcado para inferência.
+Como o TFLM é um framework de inferência, ele não oferece suporte ao treinamento de modelos diretamente no dispositivo embarcado. O fluxo recomendado envolve o treinamento do modelo em um ambiente mais poderoso, seguido pela conversão do modelo treinado para o formato \textit{TFLite} e sua implantação no dispositivo embarcado para inferência.
 
-\textbf{Comentário Luiz: Ver se esta repetindo muita coisa dobre o TFLM no trabalho, (introdução, Referencial, Trabalhos relacionados)}
+\textbf{Comentário Luiz: Ver se está repetindo muita coisa sobre o TFLM no trabalho, (introdução, Referencial, Trabalhos relacionados)}
 
 \subsection{AIfES: A Next-Generation Edge AI Framework}
-O trabalho de \citeonline{AIfES} apresenta o Artificial Intelligence for Embedded Systems (AIfES), um framework escrito em C de código aberto para Edge AI, tanto para o treinamento quanto para a inferência de modelos. Ele surge como uma alternativa ao TFLM, com foco em ter uma arquitetura de software altamente modular, projetada para facilitar a integração de otimizações e aceleradores de hardware customizados.
+O trabalho de \citeonline{AIfES} apresenta o \textit{Artificial Intelligence for Embedded Systems} (AIfES), um framework escrito em C de código aberto para \textit{Edge AI}, tanto para o treinamento quanto para a inferência de modelos. Ele surge como uma alternativa ao TFLM, com foco em ter uma arquitetura de software altamente modular, projetada para facilitar a integração de otimizações e aceleradores de hardware customizados.
 
-Por ser um framewrok escrito em C e compatível com o compilador GCC, ele pode ser executado em qualquer hardware suportado por essa ferramenta, abrangendo desde MCUs de 8-bit até arquiteturas mais potentes como ARM Cortex-M. Sua principal vantagem nesse quesito é sua arquitetura modeular, ela permite que o desenvolvedor adicione otimizações para plataformas específicas, como a biblioteca CMSIS para MCUs ARM, através de módulos de implementação dedicados.
+Por ser um framework escrito em C e compatível com o compilador \textit{GCC}, ele pode ser executado em qualquer hardware suportado por essa ferramenta, abrangendo desde MCUs de 8 bits até arquiteturas mais potentes como ARM Cortex-M. Sua principal vantagem nesse quesito é sua arquitetura modular, que permite que o desenvolvedor adicione otimizações para plataformas específicas, como a biblioteca CMSIS para MCUs ARM, através de módulos de implementação dedicados.
 
-Quanto a facilidade de uso o framework busca ser intuítivo e possui um fluxo de desenvolvimento similiar aos frameworks de treinamentos populares como PyTorch e Keras, onde o modelo é construído a partir de camadas (layers), funções de perda (loss) e otimizadores (optimizers).
-%Falta falar da documentação e sobre o fluxo de desenvolvimento com modelos já prontos, sem o sem o fluxo de treinamento.
+Quanto à facilidade de uso, o framework busca ser intuitivo no quesito treinamento, e possui um fluxo de desenvolvimento similar aos frameworks de treinamento populares como \textit{PyTorch} e \textit{Keras}, onde o modelo é construído a partir de camadas (\textit{layers}), funções de perda (\textit{loss}) e otimizadores (\textit{optimizers}).
 
-No quesito de otimização, o AIfES implementa diversas estratégias. Para alocação de memória, ele utiliza um alocador estático que calcula previamente e distribui um único bloco de memória para o modelo, evitando o uso de alocação dinâmica e a ocorrência de fragmentação.
+Por outro lado, o fluxo de desenvolvimento para a inferência é mais complexo. O AIfES difere de abordagens que utilizam um único arquivo de modelo, como o TFLM. O processo de conversão exige que o desenvolvedor primeiro recrie a arquitetura da rede neural diretamente no código C, utilizando as funções e camadas/kernels fornecidos pelo AIfES. Em seguida, os pesos treinados devem ser exportados de um ambiente de treinamento (como \textit{Python}) e carregados manualmente no código do AIfES. Esse processo pode ser mais trabalhoso e propenso a erros, especialmente para modelos complexos. A documentação oficial detalhada tanto para o treinamento quanto para a inferência está disponível no repositório do \textit{GitHub}\footnote{\url{https://github.com/Fraunhofer-IMS/AIfES_for_Arduino}}.
 
-\subsection{Trabalho 3 (T3)}
+No quesito de otimização, o AIfES implementa diversas estratégias. Para alocação de memória, ele utiliza um alocador estático que calcula previamente e distribui um único bloco de memória para o modelo, evitando o uso de alocação dinâmica e a ocorrência de fragmentação. Para a otimização do treinamento, o framework implementa um fluxo de retropropagação de baixo consumo de memória, conhecido como \textit{Lightweight Backpropagation}, que aumenta a eficiência no uso da RAM. Além disso, ele também suporta quantização inteira simétrica de 8 bits e 32 bits e permite a integração de bibliotecas otimizadas como já mencionado anteriormente.
 
+O principal diferencial do AIfES (Artificial Intelligence for Embedded Systems) é sua capacidade de realizar tanto o treinamento quanto a inferência diretamente no dispositivo embarcado. Ele fornece todos os componentes necessários para treinar modelos de redes neurais, incluindo o algoritmo de retropropagação (\textit{Backpropagation}) para as camadas, funções de perda (\textit{loss functions}) e otimizadores (\textit{optimizers}). Os autores validam essa capacidade ao treinar com sucesso redes neurais totalmente conectadas (FCNNs, \textit{Fully Connected Neural Networks}) e redes neurais convolucionais (CNNs, \textit{Convolutional Neural Networks}) em um MCU ARM Cortex-M4, demonstrando a viabilidade de treinar uma CNN com um consumo de RAM pouco superior a 100 kB.
+
+\subsection{STM32Cube.AI}
+O STM32Cube.AI, detalhado no manual do usuário da \citeonline{stm32cubeai_manual}, é uma ferramenta proprietária desenvolvida pela STMicroelectronics, projetada para facilitar a implementação de modelos de inteligência artificial em microcontroladores STM32. Ele se integra ao ecossistema STM32Cube, que inclui uma série de ferramentas e bibliotecas para desenvolvimento embarcado. Diferente do TFLM, que utiliza um interpretador, essa ferramenta converte modelos pré-treinados diretamente em uma biblioteca C, otimizada e específica para a plataforma alvo.
+
+Em relação ao suporte a diferentes MCUs, o STM32Cube.AI é especificamente projetado para a família de microcontroladores STM32 da STMicroelectronics, mostrando-se uma solução mais específica e menos flexível em comparação com o TFLM e AIfES, que são agnósticos em relação ao hardware. Dentro da família STM32, ele suporta uma ampla gama de séries como STM32F4, STM32F7, STM32H7, STM32L4, entre outras.
+
+A ferramenta é integrada ao ambiente de desenvolvimento STM32CubeMX, oferecendo uma interface gráfica que guia o usuário em todas as etapas do processo. O fluxo de trabalho consiste em selecionar o MCU, carregar o modelo pré-treinado e a ferramenta gera automaticamente um projeto C completo e pronto para compilação. Na questão de documentação, o próprio manual do usuário é a principal referência, sendo bastante detalhado e complementado por documentações adicionais incluídas no pacote de software.
+
+A otimização é o principal ponto forte do STM32Cube.AI. A abordagem de geração de código mostra-se mais eficaz que o uso de um interpretador, pois elimina o \textit{overhead} associado à interpretação em tempo de execução, como afirma o manual. A ferramenta emprega várias técnicas, como a fusão de operações (\textit{operation fusing}), que combina camadas (por exemplo, uma ativação após uma convolução) para otimizar o uso da memória e da computação. Além disso, ela também suporta quantização de modelos para 8 bits e a compressão de pesos para camadas densas, visando reduzir o uso de memória Flash.
+
+Como essa é uma ferramenta focada em inferência, o STM32Cube.AI não oferece suporte ao treinamento de modelos diretamente no dispositivo embarcado. O fluxo recomendado é a utilização de um modelo pré-treinado nos formatos \textit{ONNX}, \textit{Keras} ou \textit{TensorFlow Lite} para a conversão em um projeto C.
 \section{Resumo Comparativo}
 
-Observa-se que...
+Observa-se que cada ferramenta apresenta diferentes pontos fortes e fracos, dependendo do contexto de uso. O TFLM se destaca pela portabilidade e flexibilidade, o AIfES pela capacidade de treinamento embarcado, e o STM32Cube.AI pela otimização específica para MCUs STM32.
 
-Como verificado na Tabela \ref{comparativo}, os trabalhos T1 e T2 utilizam ...
+Em relação ao nível de suporte a diferentes MCUs, o único que não possui uma abordagem agnóstica é o STM32Cube.AI, que é exclusivo para a família STM32. Já o AIfES e o TFLM suportam uma ampla gama de arquiteturas, com o AIfES se destacando por sua arquitetura modular que facilita a adição de otimizações específicas para diferentes plataformas.
+
+No quesito facilidade de uso os tres trabalhos se diferenciam bastante, com o STM32Cube.AI sendo o mais acessível para iniciantes devido à sua interface gráfica e fluxo de trabalho simplificado. O TFLM, embora bem documentado, pode apresentar uma curva de aprendizado mais acentuada devido à sua complexidade técnica. O AIfES oferece um equilíbrio, com uma abordagem intuitiva para treinamento, mas um processo mais complexo para inferência.
+
+No quesito otimização, todos trabalhos estão bem servidos , com o STM32Cube.AI se destacando por sua abordagem de geração de código que elimina o \textit{overhead} do interpretador, enquanto o TFLM e o AIfES oferecem técnicas eficazes como quantização, alocação de memória estática e uso de bibliotecas otimizadas.
+
+Por fim, apenas o AIfES oferece suporte ao treinamento diretamente no dispositivo embarcado, o que pode ser uma vantagem significativa para aplicações que exigem adaptação em tempo real ou aprendizado contínuo.
+
+A Tabela \ref{comparativo} abaixo resume as principais características dos trabalhos analisados, utilizando os critérios definidos nessa seção.
 \begin{table}[h]
 \centering 
 \caption{Comparativo entre trabalhos}
 \label{comparativo}
-    \begin{tabular}{cccccc}
-    ~  & C1  & C2  & C3 $\alpha$  & C3 $\beta$ & C4  \\ \hline
-    T1 			& Sim & Não & Sim & Não & Sim 	\\ \hline
-    T2 			& Não & Não & Nao & Não & Sim	\\ \hline
-    T3 			& Sim & Sim & Sim & Não & Sim 	\\ \hline
-    TR			& Sim & Sim & Sim & Sim & Sim 	\\ \hline
+    \begin{tabular}{cccccc} 
+    Trabalhos       & SUP         & USO         & OPT         & TRE  \\ \hline
+    TFLM 			& Alto nível  & Médio nível & Alto nível & Não  \\ \hline
+    AIfES 			& Alto nível  & Baixo nível & Alto nível & Sim  \\ \hline
+    STM32Cube.AI    & Baixo nível & Alto nível  & Alto nível  & Não  \\ \hline
+    Este Trabalho	& Alto nível & Alto nível  & Alto nível & Não  \\ \hline
     
     \end{tabular}
 \end{table}
 
-Dessa forma, os trabalhos elencados neste capitulo ...
+O trabalho proposto por esta pesquisa busca combinar os pontos fortes do TFLM com a proposta da RL, criando uma forma mais acessível, otimizada, flexível e intuitiva de implementar modelos de ML em MCUs.
 
+Em relação ao nível de suporte a diferentes MCUs, este trabalho pode ser considerado de alto nível, pois utiliza o TFLM como base, que já oferece suporte a diversas arquiteturas, além da RL, que é agnóstica em relação ao hardware. Atualmente, o trabalho está validado em MCUs ARM Cortex-M, mas a expectativa é que ele possa ser facilmente adaptado para outras arquiteturas suportadas tanto pelo TFLM quanto pela RL. Isso ocorre porque o wrapper desenvolvido é independente do hardware, sendo o único fator limitante o suporte da RL às diferentes plataformas. Esse suporte, por sua vez, é constantemente ampliado com o desenvolvimento contínuo da RL.
 
+No quesito facilidade de uso, a proposta do trabalho foi desde o início criar uma sintaxe simples e intuitiva, para facilitar a adoção por desenvolvedores com diferentes níveis de experiência, portanto pode ser considerado de alto nível.
 
+Por fim, os recursos de otimização utilizados são os mesmos do TFLM, que são bastante eficazes, portanto também podem ser considerados de alto nível.
