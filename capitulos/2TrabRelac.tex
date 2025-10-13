@@ -42,7 +42,12 @@ Como o TFLM é um framework de inferência, ele não oferece suporte ao treiname
 \subsection{AIfES: A Next-Generation Edge AI Framework}
 O trabalho de \citeonline{AIfES} apresenta o Artificial Intelligence for Embedded Systems (AIfES), um framework escrito em C de código aberto para Edge AI, tanto para o treinamento quanto para a inferência de modelos. Ele surge como uma alternativa ao TFLM, com foco em ter uma arquitetura de software altamente modular, projetada para facilitar a integração de otimizações e aceleradores de hardware customizados.
 
+Por ser um framewrok escrito em C e compatível com o compilador GCC, ele pode ser executado em qualquer hardware suportado por essa ferramenta, abrangendo desde MCUs de 8-bit até arquiteturas mais potentes como ARM Cortex-M. Sua principal vantagem nesse quesito é sua arquitetura modeular, ela permite que o desenvolvedor adicione otimizações para plataformas específicas, como a biblioteca CMSIS para MCUs ARM, através de módulos de implementação dedicados.
 
+Quanto a facilidade de uso o framework busca ser intuítivo e possui um fluxo de desenvolvimento similiar aos frameworks de treinamentos populares como PyTorch e Keras, onde o modelo é construído a partir de camadas (layers), funções de perda (loss) e otimizadores (optimizers).
+%Falta falar da documentação e sobre o fluxo de desenvolvimento com modelos já prontos, sem o sem o fluxo de treinamento.
+
+No quesito de otimização, o AIfES implementa diversas estratégias. Para alocação de memória, ele utiliza um alocador estático que calcula previamente e distribui um único bloco de memória para o modelo, evitando o uso de alocação dinâmica e a ocorrência de fragmentação.
 
 \subsection{Trabalho 3 (T3)}
 
