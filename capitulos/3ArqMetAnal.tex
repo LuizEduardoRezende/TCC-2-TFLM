@@ -22,7 +22,7 @@ Para que a integração fosse desenvolvida corretamente, foi fundamental definir
 
 A implementação de uma funcionalidade de forma nativa implicou em adicionar novas palavras reservadas à sintaxe da linguagem, ou seja, modificar as análises léxica e sintática. Em contrapartida, as funcionalidades que não modificaram as análises léxica e sintática do Robcmp foram oferecidas por meio da biblioteca padrão. Escritas em arquivos com a extensão .rob, elas puderam ser reaproveitadas pelos desenvolvedores ao importá-las no início de seus códigos. A biblioteca do Robcmp já contemplava alguns módulos, como o math, que podia ser importado para a utilização de funções matemáticas.
 
-A \hyperref[fig:nova_sintaxe]{Figura~\ref{fig:nova_sintaxe}} exibe um trecho de código que exemplifica o fluxo de um programa utilizando as novas palavras-chave da linguagem RL. A palavra-chave \texttt{model} foi utilizada para carregar o modelo e criar um objeto que conteria todas as informações necessárias para seu correto funcionamento. Já o comando \texttt{invoke} ficou responsável por realizar a inferência, ou seja, processar os dados de entrada (\textit{input}) para gerar a saída (\textit{output}).
+O \hyperref[fig:nova_sintaxe]{Código~\ref{fig:nova_sintaxe}} exibe um trecho de código que exemplifica o fluxo de um programa utilizando as novas palavras-chave da linguagem RL. A palavra-chave \texttt{model} foi utilizada para carregar o modelo e criar um objeto que conteria todas as informações necessárias para seu correto funcionamento. Já o comando \texttt{invoke} ficou responsável por realizar a inferência, ou seja, processar os dados de entrada (\textit{input}) para gerar a saída (\textit{output}).
 
 % \lstset{language=rob,morekeywords=[2]{portmode,mcu,digitalport}}
 % \begin{lstlisting}[float=tp, caption=A hardware-agnostic LED blink example., label={lst:ledblink}]
@@ -46,9 +46,7 @@ A \hyperref[fig:nova_sintaxe]{Figura~\ref{fig:nova_sintaxe}} exibe um trecho de 
 %mmcu = mcu();
 
 \lstset{language=rob,morekeywords=[1]{portmode, mcu ,digitalport, model, invoke}}
-\begin{figure}[H] % Você pode usar [H], [tp], etc.
-\centering
-\begin{lstlisting}
+\begin{lstlisting}[caption={Exemplo de código com a nova sintaxe para inferência de um modelo tflite.}, label={fig:nova_sintaxe}]
 int16 main() {
 	// 1. Define os dados de entrada e um buffer para a saida.
 	input = {0.77, 1.57, 2.3, 3.14};
@@ -68,9 +66,6 @@ int16 main() {
 	//Resto do codigo
 }
 \end{lstlisting}
-\caption{Exemplo de código com a nova sintaxe para inferência de um modelo tflite.}
-\label{fig:nova_sintaxe}
-\end{figure}
 
 \section{Procedimentos de Validação Funcional}
 A etapa de validação funcional teve como objetivo verificar se a solução proposta cumpria o que prometia, sem levar em consideração sua eficiência, aplicabilidade, facilidade ou qualquer outro fator que mede sua qualidade.

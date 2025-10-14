@@ -1,23 +1,65 @@
 \chapter{Implementação}\label{cap:implementacao}
 
 \section{Introdução}
-Neste capítulo são apresentados os detalhes da implementação das funcionalidades propostas neste trabalho. O código-fonte completo pode ser encontrado no repositório online \url{https://github.com/LuizEduardoRezende/robcmp}. O referido repositório é um \textit{fork} do projeto Robcmp original, e todo o desenvolvimento foi realizado em uma \textit{branch} dedicada. Futuramente, será submetido um \textit{pull request} para integrar estas contribuições à \textit{branch} principal do projeto Robcmp, a fim de que as novas funcionalidades fiquem disponíveis para a comunidade.
+Neste capítulo são apresentados os detalhes da implementação das funcionalidades propostas neste trabalho. O código-fonte completo pode ser encontrado no repositório online \url{https://github.com/LuizEduardoRezende/robcmp/tree/tflm}. O referido repositório é um \textit{fork} do projeto Robcmp original, e todo o desenvolvimento foi realizado em duas \textit{branchs} dedicadas, tflm e tflm-front-end. Futuramente, será submetido um \textit{pull request} para integrar estas contribuições à \textit{branch} principal do projeto Robcmp, a fim de que as novas funcionalidades fiquem disponíveis para a comunidade.
 
 \section{Arquitetura da Camada de Interoperabilidade}
-O processo de compilação e linkedição do Robcmp pode ser explicado da seguinte forma: Programas escritos com a extensão .rob são compilados e se tornam arquivos objetos (.o), enquanto que bibliotecas externas como o TFLM ou outra são compiladas e um arquivo de biblioteca estática (.a) é gerado. Depois de compilar todos programas e bibliotecas necessários o linker entra em ação com o objetivo de resolver todas referências entre os componentes para criar o executável único que pode ser chamado de firmware.
+O processo de compilação e linkedição do Robcmp pode ser explicado da seguinte forma: programas escritos com a extensão .rob são compilados pelo Robcmp e geram arquivos objeto (.o). Já as bibliotecas externas, como o TFLM ou outras, são compiladas separadamente, resultando em arquivos de biblioteca estática (.a). Após a compilação de todos os programas e bibliotecas necessários, o linker entra em ação com o objetivo de resolver todas as referências entre os componentes e criar um executável único, que pode ser chamado de firmware.
 
+É válido ressaltar que a biblioteca estática do TFLM pode ser facilmente compilada para diferentes arquiteturas, utilizando o sistema de Makefile do proprio framework. O arquivo objeto do programa em RL é gerado pelo próprio compilador Robcmp. Por fim, o wrapper C é compilado por meio do sistema de CMakeLists do Robcmp, que resolve todas as dependências e gera a biblioteca estática correspondente. A Figura~\ref{fig:linker} ilustra a arquitetura de compilação e interoperabilidade entre os componentes.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.5\linewidth]{Imagens/linker.png}
-\caption{Ilustração da arquitetura de compilação e interoperabilidade. A biblioteca estática (.a) do TFLM, o arquivo objeto (.o) do wrapper C++, e o arquivo objeto (.o) do programa em Robotics Language são processados de forma independente e, na etapa final, unificados pelo linker. O linker resolve as referências entre os componentes para criar o executável único.}
+\includegraphics[width=0.6\linewidth]{Imagens/linker.png}
+\caption{Ilustração da arquitetura de compilação e interoperabilidade. As bibliotecas estáticas (.a) do TFLM e do wrapper C, assim como o arquivo objeto (.o) do programa em RL, são processados de forma independente e, na etapa final, unificados pelo linker. O linker resolve as referências entre os componentes para criar o executável único.}
 \label{fig:linker}
 \end{figure}
 
 
 \section{Implementação do Wrapper C}
+O principal objetivo do wrapper C é fornecer uma interface simples e direta para que o código gerado pela RL possa interagir com a API do TFLM. Embora o arquivo-fonte tenha a extensão .cpp para permitir a chamada direta à API C++ do TFLM, todas as funções de interface foram declaradas com \texttt{extern “C”} para garantir uma ligação C (\textit{C linkage}) pura. Essa abordagem permite que o código compilado da RL se conecte ao wrapper como se ele fosse uma biblioteca C nativa, resolvendo a interoperabilidade em tempo de linkagem. O código do wrapper pode ser encontrado no repositório do Robcmp, na pasta \texttt{/wrappers} ou no link direto \url{https://github.com/LuizEduardoRezende/robcmp/blob/tflm-front-end/wrappers/tflm/tflm_wrapper.cpp}
+
+\subsection{Estrutura \texttt{TFLM\_Instance}}
+A estrutura \texttt{TFLM\_Instance} encapsula todos os objetos principais do TFLM, o interpretador, o alocador de memória e o resolvedor de operações. Isso mantém o estado de cada modelo carregado de forma organizada.
+
+\subsection{Registro dinâmico de operadores (\textit{Kernels})}
+Para otimizar o uso de memória, o wrapper foi projetado para não incluir o código de todas as operações de Machine Learning disponíveis. Em vez disso, a função \texttt{InitializeInterpreter} recebe uma lista contendo apenas as operações que o modelo necessita. Para viabilizar esse mecanismo, foi criada a enumeração \texttt{KernelType}, inspirada na enumeração \texttt{BuiltinOperator} do próprio TFLM. Tanto a enumeração quanto a função \texttt{RegisterOp} atuam em conjunto para garantir que apenas os kernels essenciais, como \texttt{CONV\_2D} ou \texttt{FULLY\_CONNECTED}, sejam carregados dinamicamente conforme a demanda do modelo.
+
+\subsection{Abstração de Tipos de Dados e Quantização}
+Modelos de TinyML frequentemente usam tipos de dados otimizados, como inteiros de 8 bits, para economizar memória e acelerar o processamento. O wrapper simplifica isso para o usuário da RL. As funções \texttt{SetTensorValue} e \texttt{GetTensorAsFloat} convertem automaticamente valores de ponto flutuante para o formato quantizado exigido pelo modelo e vice-versa. O desenvolvedor em RL pode trabalhar sempre com float, e o wrapper cuida de toda a matemática de conversão internamente.
+
+\subsection{Funções de Diagnóstico e Verificação}
+Para facilitar a depuração, foram implementadas as funções \texttt{DiagnoseModel} e \texttt{VerifyModelData}. Embora não sejam utilizadas diretamente no frontend do Robcmp, essas funções foram bastante úteis durante o desenvolvimento do wrapper e podem ser aproveitadas futuramente. Elas têm como objetivo inspecionar arquivos de modelo .tflite, verificando sua integridade, a versão do schema e as operações presentes no modelo.
+
+\subsection{Fluxo de Trabalho de Inferência}
+Para realizar uma inferência com um modelo TinyML utilizando o wrapper, o fluxo de trabalho segue os seguintes passos principais, por meio das chamadas de função correspondentes:
+
+\begin{enumerate}
+    \item Inicialização (\texttt{InitializeInterpreter}): Esta é a etapa inicial e mais importante do processo. A função recebe como parâmetros os dados do modelo em formato de array de bytes, um buffer de memória pré-alocado (a \texttt{tensor\_arena}) e a lista de kernels necessários. Ela prepara o modelo, aloca memória para os tensores de entrada e saída e retorna um identificador único para essa instância do modelo, mais especificamente, um ponteiro inteiro sem sinal (\texttt{uintptr\_t}), chamado de \textit{handle}.
+        
+    \item Acesso aos tensores (\texttt{GetInputTensor}, \texttt{GetOutputTensor}): Com o \textit{handle} do modelo, o usuário pode obter ponteiros para os tensores de entrada e saída, que são utilizados para leitura e escrita dos dados.
+        
+    \item Fornecimento dos dados de entrada (\texttt{SetTensorValue}): Esta função tem como objetivo preencher o tensor de entrada com os dados que serão processados pelo modelo. O usuário fornece um array de valores em ponto flutuante, e a função realiza automaticamente a conversão de tipo e quantização, quando necessário.
+        
+    \item Execução da inferência (\texttt{InvokeInterpreter}): Esta função aciona o TFLM para executar o modelo com os dados de entrada fornecidos. É o “cérebro” da operação, funcionando como um botão de ação.
+        
+    \item Obtenção dos resultados (\texttt{GetTensorAsFloat} / \texttt{GetTensorSize}): Após a inferência, \texttt{GetTensorAsFloat} é usada para ler os resultados do tensor de saída. A função retorna os dados em ponto flutuante da mesma forma padronizada que os dados de entrada foram passados. \texttt{GetTensorSize} ajuda a saber quantos dados o tensor contém.
+
+    \item Liberação de recursos (\texttt{DestroyInterpreter}): Essa função pode ser chamada para liberar os recursos para a instância do modelo, evitando vazamentos de memória.
+\end{enumerate}
 
 \section{Adaptação do Frontend do Compilador}
 
+\subsection{Análise léxica}
+Foi adicionado os tokens model e invoke, e também tokens Model-input e Model-output.
+
+\subsection{Análise sintática}
+Foram adicionadas as regras sintáticas para model statement, etc.
+
+\subsection{Análise semântica}
+
+
+
 \section{Considerações Finais}
 Este trabalho tem como objetivo inicial implementar o suporte para TinyML na arquitetura ARM Cortex-M, utilizada por diversas famílias de microcontroladores, como a STM32. Contudo, como o compilador Robcmp está em constante evolução e pode suportar novas arquiteturas no futuro, o mesmo poderá ser feito para o TinyML. Para que isso ocorra, as bibliotecas do TFLM e os wrappers deverão ser recompilados para a plataforma-alvo específica e disponibilizados no repositório do Robcmp.
+
