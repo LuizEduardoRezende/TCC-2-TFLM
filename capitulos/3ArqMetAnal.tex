@@ -48,21 +48,22 @@ O \hyperref[fig:nova_sintaxe]{Código~\ref{fig:nova_sintaxe}} exibe um trecho de
 \lstset{language=rob,morekeywords=[1]{portmode, mcu ,digitalport, model, invoke}}
 \begin{lstlisting}[caption={Exemplo de código com a nova sintaxe para inferência de um modelo tflite.}, label={fig:nova_sintaxe}]
 int16 main() {
-	// 1. Define os dados de entrada e um buffer para a saida.
-	input = {0.77, 1.57, 2.3, 3.14};
-	output = {5:0.0};
+	// 1. Define os dados de entrada, um buffer para a saida e o tamanho da arena.
+	const arena_size = 262144;
+	const kernels = {9};
+	dados = {1.57};
 
 	// 2. Carrega o modelo
-	model meu_modelo("meu_modelo.tflite", arena_size: 4096);
+	model meu_modelo("meu_modelo.tflite", arena_size, kernels);
 
 	// 3. Fornece a entrada para o modelo.
-	meu_modelo.input = input;
+	meu_modelo.input[0] = dados;
 
 	// 4. Executar a inferencia.
 	invoke meu_modelo;
 	
 	// 5. Obtem o resultado.
-	output = meu_modelo.output;
+	output = meu_modelo.output[0];
 	//Resto do codigo
 }
 \end{lstlisting}
