@@ -5,6 +5,143 @@ Neste capítulo é apresentada uma análise da aplicação ou uso do que foi con
 
 \section{Ambiente Experimental}
 
+\lstdefinestyle{terminal-abnt}{
+    language={},                        
+    backgroundcolor=\color{listbggray}, 
+    basicstyle=\ttfamily\small,         
+    keywordstyle=,                      % Estilo de keyword (vazio)
+    stringstyle=,                       % Estilo de string (vazio)
+    numbers=none,                       % Números de linha à esquerda
+    numberstyle=\tiny,                  % Estilo do número (sem cor)
+    numbersep=5pt,                      % Distância dos números
+    frame=none,                         % Sem bordas (como no seu main.pdf)
+    captionpos=t,                       % Posição da legenda (t = top), como no seu main.pdf
+    breaklines=true,                    % Quebra linhas longas
+    breakatwhitespace=true,             % Quebra apenas em espaços
+    showstringspaces=false,             % Não mostra símbolos para espaços
+    tabsize=2                           % Tamanho do TAB
+}
+\newtcblisting{abntbox}{
+    enhanced,
+    listing only,
+    colback=listbggray,     
+    colframe=listbggray,    
+    arc=3mm,                
+    left=2mm,
+    right=2mm,
+    top=2mm,
+    bottom=2mm,
+    fonttitle=\bfseries,
+    coltitle=black,         
+    listing options={style=terminal-abnt}
+}
+
+Esta seção detalha os passos necessários para configurar o ambiente de desenvolvimento, compilar o fork do Robcmp e replicar o sistema de build utilizado nos experimentos.
+
+\subsection{Pré-requisitos de Software}
+Antes de iniciar, é necessário garantir que os seguintes pacotes de software estejam instalados no sistema (preferencialmente um ambiente Linux, como o Ubuntu):
+
+\begin{itemize}
+    \item Git: Para controle de versão e download do repositório.
+    \item Cmake: Para configurar o sistema de build do Robcmp.
+    \item Make: Para executar os scripts de compilação.
+    \item Clang: Um compilador C++ moderno.
+    \item Flex: (versão 2.6.4 ou similar): Gerador de analisador léxico.
+    \item Bison: (versão 3.8.2 ou similar): Gerador de analisador sintático.
+\end{itemize}
+
+A maioria desses pacotes pode ser instalada em sistemas baseados em Debian/Ubuntu com os comandos:
+
+\begin{lstlisting}[style=terminal-abnt]
+sudo apt-get update
+sudo apt-get install git cmake make g++ flex bison
+\end{lstlisting}
+
+\begin{abntbox}
+sudo apt-get update
+sudo apt-get install git cmake make g++ flex bison
+\end{abntbox}
+
+\subsection{Download do Repositório e Submódulos}
+O fork do Robcmp utiliza submódulos do Git para gerenciar a dependência do TFLM. É necessário iniciar o submódulo existente após o clone com os seguintes comandos:
+
+\begin{abntbox}
+# Clona o repositorio fork do Robcmp
+git clone https://github.com/LuizEduardoRezende/robcmp.git
+
+# Navega ate o diretorio do repositorio
+cd robcmp
+
+# Seleciona a branch com o frontend do TFLM
+git checkout tflm-front-end
+
+# Inicializa e atualiza os submodulos
+git submodule update --init --recursive
+\end{abntbox}
+
+\subsection{Processo de Compilação (\textit{Build})}
+O processo de compilação é dividido em duas etapas, conforme a arquitetura descrita na \hyperref[sec:arq-camada-compatibilidade]{Seção~\ref{sec:arq-camada-compatibilidade}}. Primeiro, compila-se a biblioteca estática do TFLM; em seguida, compila-se o Robcmp (que inclui o \textit{wrapper} C).
+
+Navegue até o diretório do submódulo do TFLM, depois use o sistema de Makefile do TFLM para compilar a biblioteca para a arquitetura desejada:
+
+\begin{abntbox}
+# Navega ate o diretorio do TFLM
+cd third_party/tflite-micro/
+
+# Compila para uma plataforma especifica
+make -f tensorflow/lite/micro/tools/make/Makefile TARGET=cortex_m_generic TARGET_ARCH=cortex-m4 microlite
+
+# Compila para a plataforma de sua maquina de desenvolvimento(linux, windows, etc)
+make -f tensorflow/lite/micro/tools/make/Makefile microlite
+\end{abntbox}
+
+Ao final deste processo, a biblioteca estática, com o nome padronizado, deve estar presente no diretório \texttt{third-party/\allowbreak tflite-micro/\allowbreak gen/\allowbreak (nome-da-arquitetura)/\allowbreak lib/\allowbreak libtensorflow-microlite.a}.
+.
+
+Em seguida, retorne ao diretório raiz do Robcmp para compilar o projeto principal:
+
+Atenção, caso tenha feito a compilação de mais de uma biblioteca estática do TFLM, escolha apenas uma arquitetura para trabalhar por vez. Para que o build e a configuração do ambiente de desenvolvimento ocorram corretamente é necessário que exista apenas uma arquitetura dentro de \texttt{third-party/tflite-micro/gen}.
+
+Com a biblioteca TFLM pronta, retorne ao diretório raiz do robcmp para compilar o projeto principal.
+
+Crie um diretório de build e execute o cmake e o make:
+
+\begin{abntbox}
+# Cria o diretorio de build e navega ate ele
+mkdir build
+cd build
+
+# Configura o projeto
+cmake ..
+
+# Compila o projeto (use -j para compilacao paralela, ex: -j6)
+make
+\end{abntbox}
+
+Se a compilação for bem-sucedida, o executável do compilador (robcmp) estará disponível dentro do diretório \texttt{build}, pronto para ser usado nos testes de validação.
+
+\subsection{Compilação de arquivos .rob que usam o TFLM (\texttt{Makefile.tflm})}
+
+Para conseguir compilar um programa \texttt{.rob} criado ou já existente basta utilizar o \texttt{Makefile.tflm} localizado na raíz do Robcmp. Este Makefile consegue compilar programas que estejam localizados dentro da pasta \texttt{test/tflm-tests}.
+
+\begin{abntbox}
+# Mostra todos os comandos disponiveis 
+make -f Makefile.tflm
+
+# Compila e gera o executavel na pasta build
+make -f Makefile.tflm FILE=syntax-spam
+
+# Remove os arquivos gerados desse programa
+make -f Makefile.tflm FILE=syntax-spam clean
+
+# Remove os arquivos objeto(.o) gerados por programas
+make -f Makefile.tflm clean-all
+
+# Executa o programa que foi gerado na pasta build
+./build/syntax-spam
+\end{abntbox}
+
+
 \section{Validação Funcional}
 
 \section{Validação da eficiência e Análise Comparativa}

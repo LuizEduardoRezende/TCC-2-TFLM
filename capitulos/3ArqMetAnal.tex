@@ -45,7 +45,9 @@ O \hyperref[fig:nova_sintaxe]{Código~\ref{fig:nova_sintaxe}} exibe um trecho de
 %// Uma implementacao de microcontrolador sera vinculada aqui.
 %mmcu = mcu();
 
-\lstset{language=rob,morekeywords=[1]{portmode, mcu ,digitalport, model, invoke}}
+\lstset{language=rob,
+morekeywords=[1]{portmode, mcu ,digitalport, model, invoke},
+}
 \begin{lstlisting}[caption={Exemplo de código com a nova sintaxe para inferência de um modelo tflite.}, label={fig:nova_sintaxe}]
 int16 main() {
 	// 1. Define os dados de entrada, um buffer para a saida e o tamanho da arena.
