@@ -79,10 +79,14 @@ git checkout tflm-front-end
 git submodule update --init --recursive
 \end{abntbox}
 
+Talvez seja necessário atualizar o seu explorador de arquivos para vizualiar os novos arquivos criados, após a inicialização e atualização dos submódulos.
+
 \subsection{Processo de Compilação (\textit{Build})}
 O processo de compilação é dividido em duas etapas, conforme a arquitetura descrita na \hyperref[sec:arq-camada-compatibilidade]{Seção~\ref{sec:arq-camada-compatibilidade}}. Primeiro, compila-se a biblioteca estática do TFLM; em seguida, compila-se o Robcmp (que inclui o \textit{wrapper} C).
 
-Navegue até o diretório do submódulo do TFLM, depois use o sistema de Makefile do TFLM para compilar a biblioteca para a arquitetura desejada:
+Caso esteja buscando compilar para uma arquitetura especifica (ex: Cortex-M4), é possível verificar todas as arquiteturas suportadas pelo TFLM na documentação do \textit{GitHub} \footnote{\url{https://github.com/tensorflow/tflite-micro/blob/main/tensorflow/lite/micro/cortex_m_generic/README.md}}.
+
+Com uma arquitetura específica em mente, navegue até o diretório do submódulo do TFLM, depois use o sistema de Makefile do TFLM para compilar a biblioteca para a arquitetura desejada:
 
 \begin{abntbox}
 # Navega ate o diretorio do TFLM
@@ -95,16 +99,11 @@ make -f tensorflow/lite/micro/tools/make/Makefile TARGET=cortex_m_generic TARGET
 make -f tensorflow/lite/micro/tools/make/Makefile microlite
 \end{abntbox}
 
-Ao final deste processo, a biblioteca estática, com o nome padronizado, deve estar presente no diretório \texttt{third-party/\allowbreak tflite-micro/\allowbreak gen/\allowbreak (nome-da-arquitetura)/\allowbreak lib/\allowbreak libtensorflow-microlite.a}.
-.
+Ao final deste processo, a biblioteca estática com nome padronizado deverá estar presente no diretório \texttt{third-party/\allowbreak tflite-micro/\allowbreak gen/\allowbreak (nome-da-arquitetura)/\allowbreak lib/\allowbreak libtensorflow-microlite.a}. Talvez seja necessário atualizar o seu explorador de arquivos para vizualiar os novos arquivos criados.
 
-Em seguida, retorne ao diretório raiz do Robcmp para compilar o projeto principal:
+Atenção, caso tenha feito a compilação de mais de uma biblioteca estática do TFLM, escolha apenas uma arquitetura para trabalhar por vez. Para que o build e a configuração do ambiente de desenvolvimento ocorram corretamente é necessário que exista apenas uma arquitetura dentro de \texttt{third-party/tflite-micro/gen}. Caso deseje trabalhar com multiplas arquiteturas, é recomendado que se crie cópias do repositório do Robcmp para cada arquitetura desejada.
 
-Atenção, caso tenha feito a compilação de mais de uma biblioteca estática do TFLM, escolha apenas uma arquitetura para trabalhar por vez. Para que o build e a configuração do ambiente de desenvolvimento ocorram corretamente é necessário que exista apenas uma arquitetura dentro de \texttt{third-party/tflite-micro/gen}.
-
-Com a biblioteca TFLM pronta, retorne ao diretório raiz do robcmp para compilar o projeto principal.
-
-Crie um diretório de build e execute o cmake e o make:
+Com a biblioteca TFLM pronta, retorne ao diretório raiz do robcmp para compilar o projeto principal utilizando o Cmake e o Make:
 
 \begin{abntbox}
 # Cria o diretorio de build e navega ate ele
@@ -122,11 +121,11 @@ Se a compilação for bem-sucedida, o executável do compilador (robcmp) estará
 
 \subsection{Compilação de arquivos .rob que usam o TFLM (\texttt{Makefile.tflm})}
 
-Para conseguir compilar um programa \texttt{.rob} criado ou já existente basta utilizar o \texttt{Makefile.tflm} localizado na raíz do Robcmp. Este Makefile consegue compilar programas que estejam localizados dentro da pasta \texttt{test/tflm-tests}.
+Para conseguir compilar um programa \texttt{.rob} criado ou já existente basta utilizar o \texttt{Makefile.tflm} localizado na raíz do Robcmp. Este Makefile consegue compilar programas que estejam localizados dentro da pasta \texttt{test/tflm-tests}. A partir da raíz do projeto Robcmp, utilize os seguintes comandos:
 
 \begin{abntbox}
 # Mostra todos os comandos disponiveis 
-make -f Makefile.tflm
+make -f Makefile.tflm help
 
 # Compila e gera o executavel na pasta build
 make -f Makefile.tflm FILE=syntax-spam

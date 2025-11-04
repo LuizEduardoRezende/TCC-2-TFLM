@@ -1,5 +1,5 @@
 # Mostra todos os comandos disponiveis
-make -f Makefile.tflm
+make -f Makefile.tflm help
 
 # Compila e gera o executavel na pasta build
 make -f Makefile.tflm FILE=syntax-spam
