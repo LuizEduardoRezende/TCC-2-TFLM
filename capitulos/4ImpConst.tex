@@ -101,7 +101,7 @@ uintptr_t GetInputTensor(uintptr_t instance_handle, size_t index, int);
 
 
 \subsection{Convenção de Tipos de Dados e Quantização}
-Modelos de TinyML frequentemente usam tipos de dados otimizados, como inteiros de 8 bits, para economizar memória e acelerar o processamento. O \textit{wrapper} simplifica isso para o usuário da RL. As funções do código \hyperref{lst:get-tensor-value} convertem automaticamente valores de ponto flutuante para o formato quantizado exigido pelo modelo e vice-versa. O desenvolvedor em RL pode trabalhar sempre com float, e o \textit{wrapper} cuida de toda a matemática de conversão internamente. 
+Modelos de TinyML frequentemente usam tipos de dados otimizados, como inteiros de 8 bits, para economizar memória e acelerar o processamento. O \textit{wrapper} simplifica isso para o usuário da RL. As funções do código \hyperref{lst:get-tensor-value} convertem automaticamente valores de ponto flutuante para o formato quantizado exigido pelo modelo e vice-versa. O desenvolvedor em RL pode trabalhar sempre com float, e o \textit{wrapper} cuida de toda a matemática de conversão internamente. Para tensores quantizados, o \textit{wrapper} aplica o mapeamento linear baseado nos parâmetros de escala (\texttt{scale}) e ponto zero (\texttt{zero\_point}) do tensor, conforme as seguintes fórmulas: \texttt{valor\_quantizado = round((valor\_float / scale) + zero\_point)} para quantização, e \texttt{valor\_float = scale * (valor\_quantizado - zero\_point)} para desquantização.
 
 Enquanto que as funções \texttt{SetTensorValue} e \texttt{GetTensorAsFloat} são para manipular valores individuais, as funções \texttt{SetTensorArray} e \texttt{GetTensorArray} permitem manipular arrays inteiros dos tensores.
 
@@ -406,5 +406,17 @@ Este método é responsável por gerar o código LLVM-IR necessário para invoca
 \end{enumerate}
 
 \section{Considerações Finais}
-Este trabalho tem como objetivo inicial implementar o suporte para TinyML na arquitetura ARM Cortex-M, utilizada por diversas famílias de microcontroladores, como a STM32. Contudo, como o compilador Robcmp está em constante evolução e pode suportar novas arquiteturas no futuro, o mesmo poderá ser feito para o TinyML. Para que isso ocorra, as bibliotecas do TFLM e os \textit{wrappers} deverão ser recompilados para a plataforma-alvo específica e disponibilizados no repositório do Robcmp.
 
+\subsection{Limitações}
+Apesar da implementação ser funcional, algumas partes apresentam certas limitações e desvantagens que poderiam ter sido aprimoradas. No entanto, devido ao tempo disponível e ao grande escopo do projeto, algumas decisões foram tomadas visando a conclusão do trabalho.
+
+Um aspecto que poderia ser melhorado é a convenção adotada para entrada e saída de dados nos modelos. Atualmente, o desenvolvedor deve utilizar variáveis ou vetores de ponto flutuante, deixando a responsabilidade de conversão e quantização para o \textit{wrapper}. Essa abordagem simplifica o uso da solução ao encapsular toda a a complexidade, porém, pode introduzir algumas problemáticas. Por exemplo, ao utilizar métodos de arredondamento simples durante a quantização ou conversão de tipos, pode ocorrer perda de precisão, especialmente em aplicações sensíveis a erros.
+
+Outra limitação está relacionada aos tokens que tratam o acesso aos tensores de entrada e saída de um modelo. Eles exigem uma sintaxe específica: um identificador seguido de ``.input'' ou ``.output''. Isso restringe a linguagem RL, impedindo que variáveis chamadas \texttt{input} e \texttt{output} sejam criadas dentro de tipos de dados personalizados. O ideal seria não criar esses tokens na linguagem, mas sim tratar o acesso aos tensores como membros normais de um tipo de dado personalizado. Dessa forma, durante a analise semântica, o compilador verificaria se o identificador é um modelo, e então permitiria o acesso aos membros \texttt{input} e \texttt{output} normalmente.
+
+Por fim, a classe \texttt{ModelNode} concentra uma grande quantidade de responsabilidades e utiliza um esquema de roteamento interno para decidir qual operação realizar. Isso resulta em um código menos modular e mais acoplado. O ideal seria dividir cada funcionalidade em classes separadas, como \texttt{ModelDeclarationNode}, \texttt{ModelInvokeNode}, \texttt{ModelInputNode} e \texttt{ModelOutputNode}.
+
+Todas essas limitações podem ser solucionadas com um refatoramento e uma revisão de código, que podem ser realizados em trabalhos futuros.
+
+\subsection{Portabilidade e Suporte a Diferentes Arquiteturas}
+Este trabalho tem como objetivo inicial implementar o suporte para o TFLM na arquitetura ARM Cortex-M, utilizada por diversas famílias de microcontroladores, como a STM32. No entanto, o desenvolvedor pode escolher a arquitetura desejada para gerar o firmware, desde que o Robcmp e o TFLM ofereçam suporte à plataforma escolhida. Para isso, é necessário compilar tanto o wrapper quanto a biblioteca do TFLM para a arquitetura específica, conforme demonstrado na \hyperref[sec:ambiente-experimental]{Seção~\ref*{sec:ambiente-experimental}}. Dessa forma, o sistema pode ser adaptado para diferentes plataformas, bastando seguir o procedimento de compilação adequado.
