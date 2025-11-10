@@ -1,7 +1,24 @@
 \chapter{Avaliação e Testes}\label{cap:analise}
 
-\section{Introdução}
-Neste capítulo é apresentada uma análise da aplicação ou uso do que foi construído e demonstrado no capítulo anterior. Esta análise pode ser realizada usando normas (ISO/EIC) já estabelecidas. Pode ser por meio de testes de laboratório, pode ser simulada, pode ser aplicada em um contexto (universo/população/amostragem) real. E, também pode ser por meio da criação de uma metodologia própria para a análise.
+\section{Metodologia}
+Esta seção descreve os procedimentos metodológicos adotados e os recursos empregados para alcançar os objetivos deste trabalho.
+
+\subsection{Software e Hardware}
+Os novos recursos e funcionalidades implementados diretamente na linguagem RL foram escritos em C++ e desenvolvidos com o auxílio das ferramentas Flex (versão 2.6.4) e Bison (versão 3.8.2), responsáveis por gerar os analisadores léxico e sintático do Robcmp. Por outro lado, a nova biblioteca padrão foi desenvolvida com a própria linguagem RL, criando um arquivo \texttt{.rob} que continha todas as declarações das funções do \textit{wrapper} C do TFLM.
+
+O ambiente de desenvolvimento foi o Visual Studio Code (versão 1.101), com o auxílio de duas extensões principais: o PlatformIO (versão 6.1.18), para depurar e exportar os \textit{firmwares} para as placas, e o RobCmpSyntax (versão 1.0), que fornece o realce de sintaxe para arquivos .rob.
+
+A máquina de desenvolvimento utilizada foi um \textit{notebook} Lenovo IdeaPad 3 15ITL6, equipado com processador Intel® Core™ i7-1165G7, 16 GB de RAM e sistema operacional Ubuntu 24.04.1 LTS. Além da máquina de desenvolvimento, a execução e validação das aplicações ocorreram em uma placa com o microcontrolador STM32F407VET6, da família STM32, popularmente chamada de Black STM32F407VET6. Essa placa conta com um processador ARM Cortex-M4 rodando a 168 MHz, 192 KB de RAM e 512 KB de memória Flash.
+
+\subsection{Procedimentos de Validação Funcional}
+A etapa de validação funcional teve como objetivo verificar se a solução proposta cumpria o que prometia, sem levar em consideração sua eficiência, aplicabilidade, facilidade ou qualquer outro fator que mede sua qualidade.
+
+Nesta etapa, as novas funcionalidades foram validadas utilizando testes unitários, que foram executados tanto na máquina de desenvolvimento quanto na placa Black STM32F407VET6. Esses testes foram projetados para verificar se cada nova funcionalidade implementada no Robcmp estava operando conforme o esperado. Foram criados diversos arquivos \texttt{.rob} que utilizavam diferentes modelos de ML, abrangendo uma variedade de cenários e casos de uso. Os testes foram desenvolvidos utilizando tanto a linguagem RL com as novas palavras-chave quanto a biblioteca padrão, localizada no diretório \texttt{lib/ai/tflm.rob}.
+
+\subsection{Validação da eficiência e Análise Comparativa}
+Para validar a eficiência da integração do TFLM à RL, foi realizada uma análise comparativa entre três abordagens de desenvolvimento de firmwares: os desenvolvidos com a nova sintaxe da RL, os que utilizaram a biblioteca padrão do Robcmp para TinyML e os desenvolvidos diretamente em C++ utilizando o ambiente do TFLM.
+
+Para garantir uma avaliação justa, ambos os testes foram conduzidos em um MCU idêntico e com o mesmo modelo de ML. Nesta avaliação, foram considerados critérios como a facilidade de desenvolvimento, a manutenibilidade do código, o tempo de execução e o tamanho final do executável.
 
 \section{Configuração do Ambiente Experimental}\label{sec:ambiente-experimental}
 
@@ -36,7 +53,9 @@ Neste capítulo é apresentada uma análise da aplicação ou uso do que foi con
     listing options={style=terminal-abnt}
 }
 
-Esta seção detalha os passos necessários para configurar o ambiente de desenvolvimento, compilar o fork do Robcmp e replicar o sistema de build utilizado nos experimentos.
+Esta seção detalha os passos necessários para configurar o ambiente de desenvolvimento, compilar o fork do Robcmp e replicar o sistema de build utilizado nos experimentos. 
+
+No futuro, um novo desenvolvedor não precisará seguir estes passos pois o Robcmp já estará com o processo de compilação para programas que utilizam do TFLM automatizado e integrado ao Platoformio com VS Code, da mesma forma que já está para programas embarcados convencionais. Porém, esta seção é valiosa para trabalhos futuros que desejem modificar o compilador Robcmp ou entender melhor sua integração com o TFLM.
 
 \subsection{Pré-requisitos de Software}
 Antes de iniciar, é necessário garantir que os seguintes pacotes de software estejam instalados no sistema (preferencialmente um ambiente Linux, como o Ubuntu):

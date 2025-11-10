@@ -1,12 +1,15 @@
 \chapter{Implementação}\label{cap:implementacao}
 
-\section{Introdução}
-Neste capítulo são apresentados os detalhes da implementação das funcionalidades propostas neste trabalho. O código-fonte completo pode ser encontrado no repositório online \url{https://github.com/LuizEduardoRezende/robcmp/tree/tflm-front-end}. O referido repositório é um \textit{fork} do projeto Robcmp original, e todo o desenvolvimento foi realizado em duas \textit{branchs} dedicadas, \texttt{tflm} e \texttt{tflm-front-end}. Futuramente, será submetido um \textit{pull request} para integrar estas contribuições à \textit{branch} principal do projeto Robcmp, a fim de que as novas funcionalidades fiquem disponíveis para a comunidade.
+Neste capítulo são apresentados os detalhes da implementação das funcionalidades propostas neste trabalho, incluindo a contrução da camada de interoperabilidade, a implementação da biblioteca padrão em RL e as adaptações realizadas no \textit{frontend} do compilador Robcmp.
+
+O código-fonte completo pode ser encontrado no repositório online \url{https://github.com/LuizEduardoRezende/robcmp/tree/tflm-front-end}. O referido repositório é um \textit{fork} do projeto Robcmp original, e todo o desenvolvimento foi realizado em duas \textit{branchs} dedicadas, \texttt{tflm} e \texttt{tflm-front-end}. Futuramente, será submetido um \textit{pull request} para integrar estas contribuições à \textit{branch} principal do projeto Robcmp, a fim de que as novas funcionalidades fiquem disponíveis para a comunidade.
 
 \section{Arquitetura da Camada de Interoperabilidade}\label{sec:arq-camada-compatibilidade}
 O processo de compilação e linkedição do Robcmp pode ser explicado da seguinte forma: programas escritos com a extensão \texttt{.rob} são compilados pelo Robcmp e geram arquivos objeto (\texttt{.o}). Já as bibliotecas externas, como o TFLM ou outras, são compiladas separadamente, resultando em arquivos de biblioteca estática (\texttt{.a}). Após a compilação de todos os programas e bibliotecas necessários, o \textit{linker} entra em ação com o objetivo de resolver todas as referências entre os componentes e criar um executável único, que pode ser chamado de \textit{firmware}.
 
-É válido ressaltar que a biblioteca estática do TFLM pode ser facilmente compilada para diferentes arquiteturas, utilizando o sistema de \texttt{Makefile} do proprio \textit{framework}. Diferente do arquivo objeto do programa em RL, que é gerado pelo próprio compilador Robcmp. Por fim, o \textit{wrapper} C é compilado por meio do sistema de \texttt{CMakeLists} do Robcmp, que resolve todas as dependências e gera a biblioteca estática correspondente. A \hyperref[fig:linker]{Figura~\ref*{fig:linker}} ilustra a arquitetura de compilação e interoperabilidade entre os componentes.
+É válido ressaltar que a biblioteca estática do TFLM pode ser facilmente compilada para diferentes arquiteturas, utilizando o sistema de \texttt{Makefile} do proprio \textit{framework}. Diferente do arquivo objeto do programa em RL, que é gerado pelo próprio compilador Robcmp. Por fim, o \textit{wrapper} C é compilado por meio do arquivo \texttt{CMakeLists.txt} do Robcmp, que resolve todas as dependências e gera a biblioteca estática correspondente. 
+
+A \hyperref[fig:linker]{Figura~\ref*{fig:linker}} ilustra a arquitetura de compilação e interoperabilidade entre os componentes, as caixas azuis representam os códgios fontes dos diferentes componentes, enquanto que as caixas verdes representam os artefatos gerados após a compilação de cada componente. Após serem compilados, o linker unifica todos os artefatos em um único executável final.
 
 \begin{figure}[H]
 \centering
@@ -34,7 +37,7 @@ A estrutura \texttt{TFLM\_Instance} encapsula todos os objetos principais do TFL
     showstringspaces=false,
     breaklines=true,
     captionpos=t,
-    morekeywords={uintptr_t, int8_t, uint8_t, size_t}
+    morekeywords={uintptr_t, int8_t, uint8_t, size_t, int32_t, round, roundf}
 }
 \begin{lstlisting}[style=cpp, caption={Struct \texttt{TFLM\_Instance} encontrada no começo do \textit{wrapper}.}, label={lst:tflm-instance}]
 struct TFLM_Instance {
@@ -101,9 +104,17 @@ uintptr_t GetInputTensor(uintptr_t instance_handle, size_t index, int);
 
 
 \subsection{Convenção de Tipos de Dados e Quantização}
-Modelos de TinyML frequentemente usam tipos de dados otimizados, como inteiros de 8 bits, para economizar memória e acelerar o processamento. O \textit{wrapper} simplifica isso para o usuário da RL. As funções do código \hyperref{lst:get-tensor-value} convertem automaticamente valores de ponto flutuante para o formato quantizado exigido pelo modelo e vice-versa. O desenvolvedor em RL pode trabalhar sempre com float, e o \textit{wrapper} cuida de toda a matemática de conversão internamente. Para tensores quantizados, o \textit{wrapper} aplica o mapeamento linear baseado nos parâmetros de escala (\texttt{scale}) e ponto zero (\texttt{zero\_point}) do tensor, conforme as seguintes fórmulas: \texttt{valor\_quantizado = round((valor\_float / scale) + zero\_point)} para quantização, e \texttt{valor\_float = scale * (valor\_quantizado - zero\_point)} para desquantização.
+Modelos de TinyML frequentemente usam tipos de dados otimizados, como inteiros de 8 bits, para economizar memória e acelerar o processamento. O \textit{wrapper} simplifica isso para o usuário da RL. As funções do \hyperref[lst:get-tensor-value]{Código~\ref*{lst:get-tensor-value}} convertem automaticamente valores de ponto flutuante para o formato quantizado exigido pelo modelo e vice-versa. O desenvolvedor em RL pode trabalhar sempre com float, e o \textit{wrapper} cuida de toda a matemática de conversão internamente. Para tensores quantizados, o \textit{wrapper} aplica o mapeamento linear baseado nos parâmetros de escala (\texttt{scale}) e ponto zero (\texttt{zero\_point}) do tensor, conforme as formulas presentes no \hyperref[lst:get-quant]{Código~\ref*{lst:get-quant}}.
 
 Enquanto que as funções \texttt{SetTensorValue} e \texttt{GetTensorAsFloat} são para manipular valores individuais, as funções \texttt{SetTensorArray} e \texttt{GetTensorArray} permitem manipular arrays inteiros dos tensores.
+
+
+
+\begin{lstlisting}[style=cpp,caption={Formúlas de quantização e desquantização.}, label={lst:get-quant}]
+int32_t valor_quantizado = (int32_t)roundf((valor_float / scale) + (zero_point));
+
+float valor_float = scale * (valor_quantizado - zero_point);
+\end{lstlisting}
 
 \begin{lstlisting}[style=cpp, caption={Assinatura das funções de resgate e passagem de valores.}, label={lst:get-tensor-value}]
 void SetTensorValue(uintptr_t tensor_handle, size_t index, float value, int);
@@ -122,7 +133,7 @@ Essa é uma função responsável pela inferência do modelo. Ela aciona o TFLM 
 void InvokeInterpreter(uintptr_t instance_handle, int);
 \end{lstlisting}
 
-\subsection{Fluxo de Trabalho de Inferência}
+\section{Fluxo de Trabalho de Inferência}
 Para realizar uma inferência com um modelo TinyML utilizando o \textit{wrapper}, o fluxo de trabalho segue os seguintes passos principais, por meio das chamadas de função correspondentes:
 
 \begin{enumerate}
@@ -192,8 +203,38 @@ void DiagnoseModel(uint8[] model_data);
 void VerifyModelData(uint8[] model_data);
 \end{lstlisting}
 
-\section{Adaptação do \textit{frontend} do Compilador}
-Toda implementação do \textit{frontend} está localizada na pasta \texttt{src/}, portanto, todos arquivos mencionados nesta seção podem ser encontrados nesse diretório do repositório do Robcmp.
+\section{Ampliação da Robotics Language}
+
+As novas palavras chaves são: model , invoke, .input e .output. Cada uma com sua funcionalidade.
+
+O código a seguir mostra um exemplo simples de utilização das novas palavras chaves.
+
+\lstset{language=rob,
+morekeywords=[1]{portmode, mcu ,digitalport, model, invoke},
+}
+\begin{lstlisting}[caption={Exemplo de código com a nova sintaxe para inferência de um modelo tflite.}, label={fig:nova_sintaxe}]
+int16 main() {
+	// 1. Define os dados de entrada, um buffer para a saida e o tamanho da arena.
+	const arena_size = 8000;
+	const kernels = {9};
+	dados = {1.57};
+
+	// 2. Carrega o modelo
+	model meu_modelo("meu_modelo.tflite", arena_size, kernels);
+
+	// 3. Fornece a entrada para o modelo.
+	meu_modelo.input[0] = dados;
+
+	// 4. Executar a inferencia.
+	invoke meu_modelo;
+	
+	// 5. Obtem o resultado.
+	output = meu_modelo.output[0];
+	//Resto do codigo
+}
+\end{lstlisting}
+
+Para a implementação dessa nova sintaxe, foram necessárias modificações no \textit{frontend} do compilador Robcmp, especificamente nas fases de análise léxica, sintática e semântica. Todo código fonte do \textit{frontend} está localizado na pasta \texttt{src/}, portanto, todos arquivos mencionados nesta seção podem ser encontrados nesse diretório do repositório do Robcmp.
 
 \lstdefinelanguage{Flex}{
   morekeywords={return},
@@ -344,7 +385,7 @@ Value* ModelNode::generate(FunctionImpl *func, BasicBlock *block, BasicBlock *al
 \end{lstlisting}
 
 
-\subsection{Processamento da Declaração do Modelo (\texttt{model\_stmt})}
+\subsubsection{Processamento da Declaração do Modelo (\texttt{model\_stmt})}
 Esse método é responsável por gerar o código LLVM-IR necessário para declarar e inicializar uma instância do modelo TinyML. Ele realiza as seguintes etapas principais:
 
 \begin{enumerate}
@@ -357,7 +398,7 @@ Esse método é responsável por gerar o código LLVM-IR necessário para declar
 
 \end{enumerate}
 
-\subsection{Processamento de Acesso a Membros (\texttt{.input}, \texttt{.output}, \texttt{.invoke})}
+\subsubsection{Processamento de Acesso a Membros (\texttt{.input}, \texttt{.output}, \texttt{.invoke})}
 Esse método é responsável por rotear o acesso aos membros depenendo do nome do membro acessado. Inicialmente o método verifica se o modelo foi declarado anteriormente, caso contrário, um erro semântico é gerado. Em seguida, dependendo do nome do membro acessado, o método chama uma das três funções específicas: \texttt{generateInputAccess}, \texttt{generateOutputAccess} ou \texttt{generateInvoke}. Caso o nome do membro não seja reconhecido, um erro semântico é gerado, conforme mostrado no \hyperref[lst:modelnode-generate]{Código~\ref*{lst:modelnode-generate}}.
 
 
@@ -375,7 +416,7 @@ Esse método é responsável por rotear o acesso aos membros depenendo do nome d
     (*@ \} @*)
 \end{lstlisting}
 
-\subsection{\texttt{generateInputAccess} (\texttt{.input})}
+\subsubsection{\texttt{generateInputAccess} (\texttt{.input})}
 Este método é responsável por realizar verificações quanto ao índice fornecido e à natureza do valor atribuído ao tensor de entrada. De acordo com as verificações, decide qual método de cópia de dados deve ser chamado. O método realiza as seguintes etapas principais:
 
 \begin{enumerate}
@@ -386,7 +427,7 @@ Este método é responsável por realizar verificações quanto ao índice forne
     \item Tratamento de erros: em várias etapas o método detecta falhas de geração do código (índice, dados, etc), registra o erro semântico e retorna \texttt{nullptr}.
 \end{enumerate}
 
-\subsection{\texttt{generateOutputAccess} (\texttt{.output})}
+\subsubsection{\texttt{generateOutputAccess} (\texttt{.output})}
 Este método é responsável por gerar o código LLVM-IR responsável por resgatar valores do tensor de saída do modelo. Ele se assemelha bastante ao método \texttt{generateInputAccess}, com algumas diferenças importantes. O método realiza as seguintes etapas principais:
 
 \begin{enumerate}
@@ -396,7 +437,7 @@ Este método é responsável por gerar o código LLVM-IR responsável por resgat
     \item Retorna o ponteiro do array: o método retorna o ponteiro para o array alocado dinamicamente.
 \end{enumerate}
 
-\subsection{\texttt{generateInvoke} (\texttt{invoke})}
+\subsubsection{\texttt{generateInvoke} (\texttt{invoke})}
 Este método é responsável por gerar o código LLVM-IR necessário para invocar a inferência do modelo. Ele realiza as seguintes etapas principais:
 
 \begin{enumerate}
