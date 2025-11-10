@@ -399,10 +399,10 @@ Esse método é responsável por gerar o código LLVM-IR necessário para declar
 \end{enumerate}
 
 \subsubsection{Processamento de Acesso a Membros (\texttt{.input}, \texttt{.output}, \texttt{.invoke})}
-Esse método é responsável por rotear o acesso aos membros depenendo do nome do membro acessado. Inicialmente o método verifica se o modelo foi declarado anteriormente, caso contrário, um erro semântico é gerado. Em seguida, dependendo do nome do membro acessado, o método chama uma das três funções específicas: \texttt{generateInputAccess}, \texttt{generateOutputAccess} ou \texttt{generateInvoke}. Caso o nome do membro não seja reconhecido, um erro semântico é gerado, conforme mostrado no \hyperref[lst:modelnode-generate]{Código~\ref*{lst:modelnode-generate}}.
+Esse método é responsável por rotear o acesso aos membros depenendo do nome do membro acessado. Inicialmente o método verifica se o modelo foi declarado anteriormente, caso contrário, um erro semântico é gerado. Em seguida, dependendo do nome do membro acessado, o método chama uma das três funções específicas: \texttt{generateInputAccess}, \texttt{generateOutputAccess} ou \texttt{generateInvoke}. Caso o nome do membro não seja reconhecido, um erro semântico é gerado, conforme mostrado no \hyperref[lst:generate-member-access]{Código~\ref*{lst:generate-member-access}}.
 
 
-\begin{lstlisting}[language=C++, caption={Roteamento do método \texttt{generateMemberAccess}.}, escapeinside={(*@}{@*)}, label={lst:modelnode-generate}]
+\begin{lstlisting}[language=C++, caption={Roteamento do método \texttt{generateMemberAccess}.}, escapeinside={(*@}{@*)}, label={lst:generate-member-access}]
     if (memberName == "input") (*@ \{ @*)
         return generateInputAccess(func, block, allocblock, modelInstance);
     (*@ \} @*) else if (memberName == "output") (*@ \{ @*)
