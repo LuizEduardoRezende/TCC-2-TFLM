@@ -1,14 +1,14 @@
 \chapter{Referencial Teórico}\label{cap:referencial}
 
-\section{Introdução}
-Para facilitar a compreensão deste projeto de pesquisa, este capítulo apresenta as
-definições e conceitos que serão utilizados ao longo do trabalho.
+Este capítulo tem como objetivo principal apresentar os conceitos teóricos que são amplamente utilizados ao longo deste trabalho. Ele se mostra fundamental para que seja constuída uma base sólida de conhecimentos e conceitos essenciais, os quais são necessários para compreender desde a comparação entre os trabalhos relacionados até a implementação e também a validação da solução proposta. 
+
+Inicialmente é apresentada uma visão sobre o funcionamento de um compilador, seguida por uma introdução aos sistemas embarcados e microcontroladores. Em seguida, é abordado o conceito de IA, com foco em TinyML e seus \textit{frameworks}. Por fim, são discutidos os conceitos de interoperabilidade entre linguagens de programação e a RL com seu compilador Robcmp.
 
 \section{Compilador}
 
 Compiladores são programas com uma função aparentemente simples: traduzir código de uma linguagem para outra. No entanto, por trás dessa definição sucinta, está um dos sistemas mais complexos da computação, formado por muitos componentes internos, algoritmos e interações complexas entre eles \cite{cooper2013engineering}.
 
-Inicialmente, o compilador pode ser visto como uma caixa-preta que recebe como entrada um código fonte (ou programa fonte) e o transforma em um código objeto (ou programa objeto). A \hyperref[fig:compilador]{Figura~\ref*{fig:compilador}} ilustra esse esquema simplificado, que ainda desconsidera as etapas internas do processo de compilação. O código fonte pode ser escrito em diversas linguagens, como C, C++, Fortran, Java ou até mesmo a RL com seu compilador Robcmp. Já a linguagem do código objeto corresponde ao conjunto de instruções de uma CPU ou MCU específico.
+Inicialmente, o compilador pode ser visto como uma caixa-preta que recebe como entrada um código fonte (ou programa fonte) e o transforma em um código objeto (ou programa objeto). A \hyperref[fig:compilador]{Figura~\ref*{fig:compilador}} ilustra esse esquema simplificado, que ainda desconsidera as etapas internas do processo de compilação. O código fonte pode ser escrito em diversas linguagens, como C, C++, Fortran, Java ou até mesmo a RL. Já a linguagem do código objeto corresponde ao conjunto de instruções de uma CPU ou MCU específico.
 
 \begin{figure}[H]
 \centering
@@ -26,7 +26,7 @@ Inicialmente, o compilador pode ser visto como uma caixa-preta que recebe como e
 \label{fig:compilador-front-back}
 \end{figure}
 
-\section{Frontend}
+\section{\textit{Frontend}}
 Para que o compilador consiga traduzir o código do programa fonte, ele precisa entender tanto a forma (sintaxe) quanto o significado (semântica). O \textit{frontend} é a primeira etapa da compilação e é responsável por determinar se o código está bem construído em termos de sintaxe e semântica. Se ele identificar um código válido, uma representação intermediária é criada; caso contrário, reporta o erro ao usuário para que o problema seja identificado \cite{cooper2013engineering}.
 
 A \hyperref[fig:front-end]{Figura~\ref*{fig:front-end}} ilustra as principais etapas do \textit{frontend} consideradas neste estudo. Inicialmente, o código-fonte é submetido ao analisador léxico, que converte a sequência de caracteres em \textit{tokens} (unidades significativas). Em seguida, o analisador sintático verifica a estrutura desses \textit{tokens} e gera uma AST. Essa AST é então utilizada pelo analisador semântico para produzir uma Árvore Sintática Decorada, que finalmente é processada para gerar a Representação Intermediária (IR, do inglês \textit{Intermediate Representation}). Todas essas etapas utilizam a tabela de símbolos, seja para armazenar novas entradas ou para verificar a existência de símbolos já declarados.
@@ -46,7 +46,7 @@ O conjunto de palavras aceitas por um autômato finito, F, forma uma linguagem, 
 \subsection{Analisador Sintático}
 A principal tarefa do analisador sintático (ou \textit{parser}, em inglês) é verificar se o programa de entrada constitui uma sentença sintaticamente válida na linguagem-fonte. Para essa finalidade, essa etapa utiliza gramáticas livres de contexto, uma vez que REs não são mais suficientes para descrever a sintaxe complexa presente na maioria das linguagens de programação \cite[p. 69, 70]{cooper2013engineering}.
 
-Apesar de uma RE, como a apresentada na \hyperref[fig:RE]{Figura~\ref*{fig:RE}}, poder reconhecer a expressão a + b × c corretamente, ela não pode especificar a ordem de precedência entre os operadores. Conforme as regras algébricas convencionais, as operações de multiplicação e divisão possuem precedência sobre adição e subtração. Essa ordem de avaliação pode também ser alterada utilizando parênteses como mecanismo de agrupamento. A simples inclusão de parênteses em REs não resolve adequadamente o problema de precedência, pois é impossível definir uma RE que reconheça todas as possíveis combinações de parênteses balanceados \cite[p. 71]{cooper2013engineering}. Em outras palavras, a linguagem reconhecida por uma RE não é suficiente para o reconhecimento sintático do compilador.
+Apesar de uma RE, como a apresentada na \hyperref[fig:RE]{Figura~\ref*{fig:RE}}, poder reconhecer a expressão a + b × c corretamente, ela não pode especificar a ordem de precedência entre os operadores. Conforme as regras algébricas convencionais, as operações de multiplicação e divisão possuem precedência sobre adição e subtração. Essa ordem de avaliação pode também ser alterada utilizando parênteses como mecanismo de agrupamento. Porém, a simples inclusão de parênteses em REs não resolve adequadamente o problema de precedência, pois é impossível definir uma RE que reconheça todas as possíveis combinações de parênteses balanceados \cite[p. 71]{cooper2013engineering}. Em outras palavras, a linguagem reconhecida por uma RE não é suficiente para o reconhecimento sintático do compilador.
 
 \begin{figure}[H]
 \centering
@@ -55,17 +55,37 @@ Apesar de uma RE, como a apresentada na \hyperref[fig:RE]{Figura~\ref*{fig:RE}},
 \label{fig:RE}
 \end{figure}
 
-Em vez de utilizar REs para verificar sentenças, o analisador sintático emprega uma gramática livre de contexto (CFG, do inglês \textit{Context-Free Grammar}), um conjunto de regras que descreve como as sentenças podem ser formadas. A coleção de todas as sentenças deriváveis a partir de G é denominada linguagem definida por G, representada por L(G) \cite[p. 71]{cooper2013engineering}. Esse mecanismo demonstra maior poder expressivo e complexidade na especificação de construções sintáticas, uma vez que, diferentemente das REs, é capaz de:
+Em vez de utilizar REs para verificar sentenças, o analisador sintático emprega uma gramática livre de contexto (CFG, do inglês \textit{Context-Free Grammar}), um conjunto de regras que descreve como as sentenças podem ser formadas. A coleção de todas as sentenças deriváveis a partir de G é denominada linguagem definida por G, representada por L(G) \cite[p. 71]{cooper2013engineering}. Esse mecanismo demonstra maior poder expressivo e complexidade na especificação de construções sintáticas, uma vez que, diferentemente das REs, possui algumas capacidades adicionais que serão destacadas a seguir.
 
-\begin{itemize}
+Uma CFG pode introduzir precedência criando níveis separados na gramática (Expr, Term, Factor). Operadores de maior precedência aparecem em níveis mais internos e, por isso, são reduzidos antes dos de menor precedência. 
 
-\item Validar construções com parênteses balanceados; A regra Expr -> ( Expr ) na \hyperref[fig:CFG-regra]{Figura~\ref{fig:CFG-regra}} demonstra essa capacidade, permitindo que expressões sejam aninhadas recursivamente dentro de parênteses. O analisador sintático utiliza essa regra para garantir que, para cada parêntese de abertura, exista um correspondente de fechamento.
+No exemplo do \hyperref[lst:cfg-precedencia]{Código~\ref{lst:cfg-precedencia}}, a adição e subtração são definidas em expr, enquanto multiplicação e divisão ficam em term e são resolvidas antes de + e - que ficam em expr. A recursão à esquerda (expr → expr op term e term → term op factor) impõe associatividade à esquerda: a - b - c é agrupado como (a - b) - c. Se a gramática tivesse recursão à direita (expr → term ('+' expr | '-' expr)), o agrupamento seria a - (b - c). Parênteses em factor permitem sobrescrever essa ordem.
 
-\item Incorporar naturalmente regras de precedência de operadores, como ilustrado pelas regras de derivação na \hyperref[fig:CFG-regra]{Figura~\ref{fig:CFG-regra}}. Estas regras servem como blocos de construção para expressões. Através da criação de diferentes níveis hierárquicos para os operadores (algo que esta gramática simplificada não faz, mas que as CFGs permitem), é possível forçar o analisador a reconhecer a precedência correta, como avaliar a multiplicação antes da adição.
+\[
+a - b - c \equiv (a - b) - c \qquad a / b / c \equiv (a / b) / c
+\]
 
-\item Representar hierarquias sintáticas através de árvores de derivação, conforme exemplificado na \hyperref[fig:CFG-arvore]{Figura~\ref{fig:CFG-arvore}} para a expressão a + b × c. Nesta figura, a árvore ilustra a estrutura (a + b) × c. Isso ocorre porque a regra Expr -> Expr Op nome força uma avaliação da esquerda para a direita (associatividade à esquerda). A árvore mostra a operação de adição a + b sendo formada em um nível mais baixo e, em seguida, o resultado dessa subárvore é usado como operando para a multiplicação por c, que está no topo da árvore.
+\begin{lstlisting}[caption={Gramática (formato Bison) que define precedência e associatividade para operadores aritméticos},label={lst:cfg-precedencia}]
+expr : expr '+' term
+     | expr '-' term
+     | term
+     ;
 
-\end{itemize}
+term : term '*' factor
+     | term '/' factor
+     | factor
+    ;
+
+factor : '(' expr ')'
+       | TOK_IDENT
+       | TOK_INTEIRO
+       ;
+\end{lstlisting}
+
+
+Além disso, uma CFG pode validar construções com parênteses balanceados; A regra Expr -> ( Expr ) na \hyperref[fig:CFG-regra]{Figura~\ref{fig:CFG-regra}} demonstra essa capacidade, permitindo que expressões sejam aninhadas recursivamente dentro de parênteses. O analisador sintático utiliza essa regra para garantir que, para cada parêntese de abertura, exista um correspondente de fechamento.
+
+Por fim, a última capacidade de uma CFG que será abordada é sua representação de hierarquias sintáticas através de árvores de derivação. Na \hyperref[fig:CFG-arvore]{Figura~\ref{fig:CFG-arvore}}, a árvore ilustra a estrutura (a + b) × c. Isso ocorre porque a regra Expr -> Expr Op nome força uma avaliação da associatividade à esquerda. A árvore mostra a operação de adição a + b sendo formada em um nível mais baixo e, em seguida, o resultado dessa subárvore é usado como operando para a multiplicação por c, que está no topo da árvore.
 
 \begin{figure}[H]
 \centering
@@ -198,9 +218,7 @@ Esses \textit{frameworks} podem ser usados para treinar desde modelos simples at
 
 \subsection{Engines para o TinyML}
 
-Considera-se TinyML qualquer aplicação capaz de executar modelos de ML com um consumo de energia extremamente baixo. Isso se alinha à premissa destacada por \citeonline{warden2019tinyml}, que afirma: ``Se você consegue executar um modelo de rede neural com um custo energético abaixo de 1 mW, isso torna possíveis muitas aplicações completamente novas'', definindo assim o potencial e o escopo do TinyML.
-
-No contexto do TinyML, diferentemente do contexto geral de ML, os \textit{frameworks} disponíveis para o desenvolvimento possuem somente os mecanismos para inferência. Afinal, o \textit{hardware} de dispositivos como um microcontrolador não é suficiente para o treinamento de um modelo. A fase de treinamento, nesses casos, é feita em uma máquina de desenvolvimento, para que, depois, apenas a inferência seja realizada no dispositivo de borda \cite{soro2021tinyml}.
+Considera-se TinyML qualquer aplicação capaz de executar modelos de ML com um consumo de energia extremamente baixo \cite{warden2019tinyml}. Nesse contexto, diferentemente do contexto geral de ML, os \textit{frameworks} disponíveis para o desenvolvimento possuem, na maioria das vezes, somente os mecanismos para inferência. Afinal, o \textit{hardware} de dispositivos como um microcontrolador não é suficiente para o treinamento de um modelo. A fase de treinamento, nesses casos, é feita em uma máquina de desenvolvimento, para que, depois, apenas a inferência seja realizada no dispositivo de borda \cite{soro2021tinyml}.
 
 \begin{sloppypar}
 Para o desenvolvimento de TinyML em microcontroladores, há diversos \textit{frameworks} disponíveis, incluindo TFLM\footnote{Documentação do TFLM: \url{https://github.com/tensorflow/tflite-micro}} (Google), uTensor \footnote{Documentação do uTensor: \url{https://github.com/uTensor/uTensor}} (ARM), MicroTVM\footnote{Documentação do MicroTVM: \url{https://daobook.github.io/tvm/docs/topic/microtvm/index.html}} (uTVM), STM32Cube.AI\footnote{Documentação do STM32Cube.AI: \url{https://stm32ai.st.com/stm32-cube-ai/}} (STMicroelectronics), NanoEdge AI Studio\footnote{Site do NanoEdge AI Studio: \url{https://stm32ai.st.com/nanoedge-ai/}} (STMicroelectronics), Eloquent TinyML\footnote{Documentação do Eloquent TinyML: \url{https://github.com/eloquentarduino/EloquentTinyML}}, emlearn\footnote{Documentação do emlearn: \url{https://github.com/emlearn/emlearn}} e EON compiler\footnote{Documentação do EON Compiler: \url{https://docs.edgeimpulse.com/docs/edge-impulse-studio/deployment/eon-compiler}} (Edge Impulse). Embora cada um apresente suas particularidades e suporte a diferentes famílias de MCUs, o TFLM foi selecionado para este trabalho por suas vantagens e conveniência, alinhando-se aos interesses do projeto. 
@@ -227,7 +245,7 @@ Conforme \citeonline{ISO_IEC_IEEE_24765_2017}, interoperabilidade pode ser defin
 
 A interoperabilidade pode ser alcançada de diferentes maneiras, dependendo das tecnologias ou linguagens de programação utilizadas no projeto. Ela pode ocorrer entre diferentes linguagens de programação, por exemplo, C e Python, por meio de módulos existentes, como ctypes\footnote{Disponível em: \url{https://docs.python.org/3/library/ctypes.html}} e cffi\footnote{Disponível em: \url{https://cffi.readthedocs.io/en/latest/}}. Nesses casos, a interoperabilidade pode ser interpretada como Interface de Função Estrangeira (FFI, do inglês \textit{Foreign Function Interface}).
 
-No contexto deste projeto, a RL se integrará ao TFLM. Para que a RL execute as funções de inferência da API C++, será elaborada uma API intermediária ou \textit{wrapper}, na linguagem C, facilitando a interoperabilidade entre esses dois componentes em tempo de ligação (\textit{link-time}), ou seja, o código em RL, compilado com o robcmp, poderá ser ligado ao código em C++ para o TFLM, compilado usando um compilador padrão C++.
+No contexto deste projeto, a RL será integrada ao TFLM. Para que a RL invoque as funções de inferência disponibilizadas pela API em C++, será criada uma API intermediária (\textit{wrapper}) implementada em C++, mas exposta por meio de uma interface em C. Isso permitirá a interoperabilidade entre os dois componentes em tempo de ligação (\textit{link-time}); assim, o código em RL, compilado com o robcmp, poderá ser ligado ao código C++ do TFLM, compilado com um compilador padrão C++.
 
 \section{Robotics Language and Compiler}
 
