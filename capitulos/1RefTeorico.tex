@@ -65,7 +65,7 @@ No exemplo do \hyperref[lst:cfg-precedencia]{Código~\ref{lst:cfg-precedencia}},
 a - b - c \equiv (a - b) - c \qquad a / b / c \equiv (a / b) / c
 \]
 
-\begin{lstlisting}[caption={Gramática (formato Bison) que define precedência e associatividade para operadores aritméticos},label={lst:cfg-precedencia}]
+\begin{lstlisting}[style=Bison, caption={Gramática (formato Bison) que define precedência e associatividade para operadores aritméticos},label={lst:cfg-precedencia}]
 expr : expr '+' term
      | expr '-' term
      | term

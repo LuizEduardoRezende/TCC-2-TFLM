@@ -1,10 +1,13 @@
 \chapter{Avaliação e Testes}\label{cap:analise}
 
+Este capítulo abordará tudo relacionado ao processo de avaliação e testes da solução proposta. Inicialmente, serão descritos os procedimentos metodológicos adotados, incluindo também quais foram os recursos utilizados na execução dos testes, como hardware, software e outras ferramentas relevantes. Em seguida, será detalhada a configuração do ambiente experimental, fornecendo informações sobre como replicar o ambiente utilizado para os testes. Por fim, serão apresentados os resultados obtidos durante os testes, acompanhados de uma análise crítica e uma discussão final sobre os resultados.
+
 \section{Metodologia}
-Esta seção descreve os procedimentos metodológicos adotados e os recursos empregados para alcançar os objetivos deste trabalho.
+
+Esta seção descreve a metodologia adotada para avaliação e testes da solução, apresentando o ambiente de desenvolvimento (software e hardware), bem como os procedimentos de validação funcional e a análise comparativa de eficiência.
 
 \subsection{Software e Hardware}
-Os novos recursos e funcionalidades implementados diretamente na linguagem RL foram escritos em C++ e desenvolvidos com o auxílio das ferramentas Flex (versão 2.6.4) e Bison (versão 3.8.2), responsáveis por gerar os analisadores léxico e sintático do Robcmp. Por outro lado, a nova biblioteca padrão foi desenvolvida com a própria linguagem RL, criando um arquivo \texttt{.rob} que continha todas as declarações das funções do \textit{wrapper} C do TFLM.
+Os novos recursos e funcionalidades implementados diretamente na linguagem RL foram desenvolvidos com o auxílio das ferramentas Flex (versão 2.6.4) e Bison (versão 3.8.2), responsáveis por gerar os analisadores léxico e sintático do Robcmp. Além disso, a análise semântica foi escrita em C++ conforme a estrutura do compilador. Por outro lado, a nova biblioteca padrão foi desenvolvida com a própria linguagem RL, criando um arquivo \texttt{.rob} que continha todas as declarações das funções do \textit{wrapper} C do TFLM.
 
 O ambiente de desenvolvimento foi o Visual Studio Code (versão 1.101), com o auxílio de duas extensões principais: o PlatformIO (versão 6.1.18), para depurar e exportar os \textit{firmwares} para as placas, e o RobCmpSyntax (versão 1.0), que fornece o realce de sintaxe para arquivos .rob.
 
@@ -13,7 +16,7 @@ A máquina de desenvolvimento utilizada foi um \textit{notebook} Lenovo IdeaPad 
 \subsection{Procedimentos de Validação Funcional}
 A etapa de validação funcional teve como objetivo verificar se a solução proposta cumpria o que prometia, sem levar em consideração sua eficiência, aplicabilidade, facilidade ou qualquer outro fator que mede sua qualidade.
 
-Nesta etapa, as novas funcionalidades foram validadas utilizando testes unitários, que foram executados tanto na máquina de desenvolvimento quanto na placa Black STM32F407VET6. Esses testes foram projetados para verificar se cada nova funcionalidade implementada no Robcmp estava operando conforme o esperado. Foram criados diversos arquivos \texttt{.rob} que utilizavam diferentes modelos de ML, abrangendo uma variedade de cenários e casos de uso. Os testes foram desenvolvidos utilizando tanto a linguagem RL com as novas palavras-chave quanto a biblioteca padrão, localizada no diretório \texttt{lib/ai/tflm.rob}.
+Nesta etapa, as novas funcionalidades foram validadas utilizando testes unitários, que foram executados tanto na máquina de desenvolvimento quanto na placa com o MCU. Esses testes foram projetados para verificar se cada nova funcionalidade implementada no Robcmp estava operando conforme o esperado. Foram criados diversos arquivos \texttt{.rob} que utilizavam diferentes modelos de ML, abrangendo uma variedade de cenários e casos de uso. Os testes foram desenvolvidos utilizando tanto a linguagem RL com as novas palavras-chave quanto a biblioteca padrão.
 
 \subsection{Validação da eficiência e Análise Comparativa}
 Para validar a eficiência da integração do TFLM à RL, foi realizada uma análise comparativa entre três abordagens de desenvolvimento de firmwares: os desenvolvidos com a nova sintaxe da RL, os que utilizaram a biblioteca padrão do Robcmp para TinyML e os desenvolvidos diretamente em C++ utilizando o ambiente do TFLM.
@@ -53,32 +56,35 @@ Para garantir uma avaliação justa, ambos os testes foram conduzidos em um MCU 
     listing options={style=terminal-abnt}
 }
 
-Esta seção detalha os passos necessários para configurar o ambiente de desenvolvimento, compilar o fork do Robcmp e replicar o sistema de build utilizado nos experimentos. 
+Esta seção detalha os passos necessários para configurar o ambiente de desenvolvimento, isto envolve compilar o fork do Robcmp e replicar o sistema de build utilizado nos experimentos. 
 
-No futuro, um novo desenvolvedor não precisará seguir estes passos pois o Robcmp já estará com o processo de compilação para programas que utilizam do TFLM automatizado e integrado ao Platoformio com VS Code, da mesma forma que já está para programas embarcados convencionais. Porém, esta seção é valiosa para trabalhos futuros que desejem modificar o compilador Robcmp ou entender melhor sua integração com o TFLM.
+No futuro, um novo desenvolvedor não precisará seguir estes passos pois o Robcmp já disponibilizará todas as possíveis bibliotecas pré-compiladas do \textit{wrapper} e do TFLM. Assim, o processo de desenvolvimento poderá ser feito através de forma automática e integrada ao PlatformIO, da mesma forma que já ocorre para programas embarcados convencionais. 
+
+Porém, esta seção é ainda é valiosa por ensinar o processo de instalação dos pacotes necessários, clonagem correta do repositório e compilação do Robcmp, tarefas obrigatórias para um novo desenvolvedor. Além disso, esta seção é útil para trabalhos futuros que desejem modificar o compilador Robcmp ou entender melhor sua integração com o TFLM.
 
 \subsection{Pré-requisitos de Software}
 Antes de iniciar, é necessário garantir que os seguintes pacotes de software estejam instalados no sistema (preferencialmente um ambiente Linux, como o Ubuntu):
 
 \begin{itemize}
     \item Git: Para controle de versão e download do repositório.
-    \item Cmake: Para configurar o sistema de build do Robcmp.
+    \item CMake: Para configurar o sistema de build do Robcmp.
     \item Make: Para executar os scripts de compilação.
-    \item Clang: Um compilador C++ moderno.
-    \item Flex: (versão 2.6.4 ou similar): Gerador de analisador léxico.
-    \item Bison: (versão 3.8.2 ou similar): Gerador de analisador sintático.
+    \item LLVM (versão 20+): Conjunto de ferramentas e bibliotecas para compilação.
+    \item Clang (versão 20+): Compilador C/C++ baseado no LLVM.
+    \item Flex (versão 2.6.4 ou similar): Gerador de analisador léxico.
+    \item Bison (versão 3.8.2 ou similar): Gerador de analisador sintático.
 \end{itemize}
 
 A maioria desses pacotes pode ser instalada em sistemas baseados em Debian/Ubuntu com os comandos:
 
-\begin{lstlisting}[style=terminal-abnt]
-sudo apt-get update
-sudo apt-get install git cmake make g++ flex bison
-\end{lstlisting}
+% \begin{lstlisting}[style=terminal-abnt]
+% sudo apt-get update
+% sudo apt-get install git cmake make g++ flex bison
+% \end{lstlisting}
 
 \begin{abntbox}
 sudo apt-get update
-sudo apt-get install git cmake make g++ flex bison
+sudo apt-get install git cmake make clang llvm flex bison
 \end{abntbox}
 
 \subsection{Download do Repositório e Submódulos}
@@ -122,7 +128,7 @@ Ao final deste processo, a biblioteca estática com nome padronizado deverá est
 
 Atenção, caso tenha feito a compilação de mais de uma biblioteca estática do TFLM, escolha apenas uma arquitetura para trabalhar por vez. Para que o build e a configuração do ambiente de desenvolvimento ocorram corretamente é necessário que exista apenas uma arquitetura dentro de \texttt{third-party/tflite-micro/gen}. Caso deseje trabalhar com multiplas arquiteturas, é recomendado que se crie cópias do repositório do Robcmp para cada arquitetura desejada.
 
-Com a biblioteca TFLM pronta, retorne ao diretório raiz do robcmp para compilar o projeto principal utilizando o Cmake e o Make:
+Com a biblioteca TFLM pronta, retorne ao diretório raiz do robcmp para compilar o projeto principal utilizando o CMake e o Make:
 
 \begin{abntbox}
 # Cria o diretorio de build e navega ate ele
@@ -136,7 +142,7 @@ cmake ..
 make
 \end{abntbox}
 
-Se a compilação for bem-sucedida, o executável do compilador (robcmp) estará disponível dentro do diretório \texttt{build}, pronto para ser usado nos testes de validação.
+Se a compilação for bem-sucedida, o executável do compilador (arquivo \texttt{robcmp}) estará disponível dentro do diretório \texttt{build}, pronto para ser usado nos testes de validação.
 
 \subsection{Compilação de arquivos .rob que usam o TFLM (\texttt{Makefile.tflm})}
 
@@ -159,10 +165,49 @@ make -f Makefile.tflm clean-all
 ./build/syntax-spam
 \end{abntbox}
 
+\section{Resultados da Validação Funcional}
+Como o objetivo da validação funcional era garantir que as novas funcionalidades implementadas estivessem operando conforme o esperado, foram criados diversos arquivos \texttt{.rob} que utilizavam diferentes modelos de ML, abrangendo uma variedade de cenários e casos de uso.
 
-\section{Validação Funcional}
+A maioria dos testes unitários do Robcmp estão presentes na pasta \texttt{test/general} e são executados automaticamente através do Makefile e de um script \texttt{run-tests.sh}. No caso dos testes unitários relacionados ao TFLM, estes estão localizados na pasta \texttt{test/tflm-tests}. Essa separação foi necessária pois o processo de linkedição dos programas que utilizam o TFLM é diferente dos programas convencionais, exigindo a inclusão da biblioteca estática do TFLM e do \textit{wrapper} C.
 
-\section{Validação da eficiência e Análise Comparativa}
+Dentro do diretório de testes desejado, basta executar o comando \texttt{make} para que todos os testes sejam compilados e executados automaticamente. Foram desenvolvidos testes unitários tanto utilizando a nova sintaxe da RL quanto utilizando a biblioteca padrão do Robcmp para TinyML. Como convenção, os arquivos de teste que utilizam a nova sintaxe possuem o prefixo \texttt{syntax-}, enquanto os que utilizam a biblioteca padrão possuem o prefixo \texttt{lib-}.
+
+Dois arquivos de exemplo foram colocados nos apêndices no final deste trabalho que realizam os testes unitários com o modelo de classificação de spam. O \hyperref[]{Código~\ref*{}} apresenta o arquivo \texttt{syntax-spam.rob}, que utiliza a nova sintaxe da RL, enquanto o \hyperref[lst:teste-bib-rob]{Código~\ref*{lst:teste-bib-rob}} apresenta o arquivo \texttt{lib-spam.rob}, que utiliza a biblioteca padrão.
+
+Esses testes verificam se o modelo de ML é carregado corretamente, se as entradas são processadas adequadamente e se as saídas correspondem ao esperado, entre outros aspectos. Ambos os arquivos foram compilados e executados com sucesso, confirmando o correto funcionamento das novas funcionalidades.
+
+\section{Resultados da Validação da Eficiência e Análise Comparativa}
+
+
+\begin{table}[h]
+\centering 
+\caption{Tamanho do código objeto em \textit{bytes}}
+\label{comparativo}
+    \begin{tabular}{cccc}
+    \toprule
+    \textbf{Modelo TinyML} & \textbf{Sintaxe} & \textbf{Biblioteca padrão} & \textbf{TFLM(C++)}  \\ \midrule
+    Classificador de Spam   \\ 
+    Preditor de Seno quantizado \\
+    Preditor de Seno  \\ 
+    \bottomrule
+    
+    \end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering 
+\caption{Tempo de execução, em milissegundos}
+\label{comparativo}
+    \begin{tabular}{cccc}
+    \toprule
+    \textbf{Modelo TinyML} & \textbf{Sintaxe} & \textbf{Biblioteca padrão} & \textbf{TFLM(C++)}  \\ \midrule
+    Classificador de Spam   \\ 
+    Preditor de Seno quantizado \\
+    Preditor de Seno  \\ 
+    \bottomrule
+    
+    \end{tabular}
+\end{table}
 
 \section{Considerações Finais}
 

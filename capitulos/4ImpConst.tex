@@ -39,6 +39,7 @@ A estrutura \texttt{TFLM\_Instance} encapsula todos os objetos principais do TFL
     captionpos=t,
     morekeywords={uintptr_t, int8_t, uint8_t, size_t, int32_t, round, roundf}
 }
+
 \begin{lstlisting}[style=cpp, caption={Struct \texttt{TFLM\_Instance} encontrada no começo do \textit{wrapper}.}, label={lst:tflm-instance}]
 struct TFLM_Instance {
     tflite::RecordingMicroInterpreter* interpreter;
@@ -48,7 +49,7 @@ struct TFLM_Instance {
 \end{lstlisting}
 
 \subsection{Tipo enumerado \texttt{KernelType} e função \texttt{RegisterOp}}
-A enumeração \texttt{KernelType}, inspirada na enumeração \texttt{BuiltinOperator} do próprio TFLM, foi criada com o intuito de possibilitar o registro dinâmico de operadores (\textit{kernels}) necessários para a execução de um modelo. Tanto a enumeração quanto a função \texttt{RegisterOp} atuam em conjunto para garantir que apenas os kernels essenciais, como \texttt{CONV\_2D} ou \texttt{FULLY\_CONNECTED}, sejam carregados dinamicamente conforme a necessidade especificada pelo desenvolvedor.
+A enumeração \texttt{KernelType}, inspirada na enumeração \texttt{BuiltinOperator} do próprio TFLM, foi criada com o intuito de possibilitar o registro dinâmico de operadores (\textit{kernels}) necessários para a execução de um modelo. Tanto a enumeração quanto a função \texttt{RegisterOp} atuam em conjunto para garantir que apenas os \textit{kernels} essenciais, como \texttt{CONV\_2D} ou \texttt{FULLY\_CONNECTED}, sejam carregados dinamicamente conforme a necessidade especificada pelo desenvolvedor.
 
 \begin{lstlisting}[style=cpp, caption={Tipo enumerado \texttt{KernelType} e função \texttt{RegisterOp}.}, label={lst:kernel-type}]
 typedef enum {
@@ -76,13 +77,13 @@ void RegisterOp(tflite::MicroMutableOpResolver<100>* resolver, KernelType kernel
 \end{lstlisting}
 
 \subsection{\texttt{InitializeInterpreter}}
-É a primeira função a ser chamada em um fluxo de inferência, responsável por configurar o interpretador e outras instâncias necessárias para a execução do modelo. Recebe como parâmetros os dados do modelo em formato de array de bytes, o buffer de memória pré-alocado (tensor arena) e a lista de kernels a serem registrados. Retorna um identificador único (handle) para a instância do modelo, do tipo \texttt{uintptr\_t}, pois o Robcmp não possui suporte a ponteiros nativos em sua linguagem.
+É a primeira função a ser chamada em um fluxo de inferência, responsável por configurar o interpretador e outras instâncias necessárias para a execução do modelo, sua assinatura é apresentada no \hyperref[lst:initialize-interpreter]{Código~\ref*{lst:initialize-interpreter}}. Recebe como parâmetros os dados do modelo em formato de array de bytes, o buffer de memória pré-alocado (tensor arena) e a lista de \textit{kernels} a serem registrados. Retorna um identificador único (\textit{handle}) para a instância do modelo, do tipo \texttt{uintptr\_t}, um inteiro sem sinal cujo tamanho varia de acordo com a arquitetura para a qual o \textit{wrapper} foi compilado. Um inteiro é retornado porque o Robcmp não possui suporte a ponteiros nativos em sua linguagem.
 
-É importante ressaltar que a função recebe alguns parâmetros adicionais além dos já mencionados, como \texttt{tensor\_arena\_size}, \texttt{num\_kernels} e um parâmetro sem nome. Esses parâmetros podem ou não ser utilizados, mas devem constar na declaração da função por questões de compatibilidade com o \textit{backend} do LLVM. As demais funções do wrapper também podem conter parâmetros extras pelo mesmo motivo.
+É importante ressaltar que a função recebe alguns parâmetros adicionais além dos já mencionados, como \texttt{tensor\_arena\_size}, \texttt{num\_kernels} e um parâmetro sem nome. Esses parâmetros podem ou não ser utilizados, mas devem constar na declaração da função por questões de compatibilidade com o \textit{backend} do LLVM. As demais funções do \textit{wrapper} também podem conter parâmetros extras pelo mesmo motivo.
 
-A necessidade desses parâmetros surge quando o Robcmp utiliza a biblioteca padrão do diretório \texttt{lib/ai/tflm.rob}, que contém as declarações das funções do wrapper. Essas declarações precisam estar alinhadas com as definições reais das funções no wrapper. No arquivo \texttt{.rob}, para cada argumento que seja um vetor, é adicionado um argumento extra do tipo inteiro que representa o tamanho desse vetor. Isso é uma característica do compilador Robcmp para tratar vetores em chamadas de função. Portanto, para manter a consistência entre declarações e definições, esses parâmetros adicionais são incluídos nas definições das funções no wrapper.
+A necessidade desses parâmetros surge quando o Robcmp utiliza a biblioteca padrão do diretório \texttt{lib/ai/tflm.rob}, que contém as declarações das funções do wrapper conforme mostrado na \hyperref[lst:get-tensor-value]{Seção~\ref*{sec:bib-padrao}}. Essas declarações precisam estar alinhadas com as definições reais das funções no \textit{wrapper}. No arquivo \texttt{.rob}, para cada argumento que seja um vetor, é adicionado um argumento extra do tipo inteiro que representa o tamanho desse vetor. Isso é uma característica do compilador Robcmp para tratar vetores em chamadas de função. Portanto, para manter a consistência entre declarações e definições, esses parâmetros adicionais são incluídos nas definições das funções no \textit{wrapper}.
 
-No caso de uso do wrapper sem a biblioteca padrão \texttt{tflm.rob}, ou seja, quando as chamadas são geradas diretamente pelo front-end do compilador, esses parâmetros adicionais não são necessários, pois as chamadas ocorrem diretamente no código C++ ou no LLVM-IR gerado pela análise semântica do compilador.
+No caso de uso do \textit{wrapper} sem a biblioteca padrão \texttt{tflm.rob}, ou seja, quando as chamadas são geradas diretamente pelo front-end do compilador, esses parâmetros adicionais não são necessários, pois as chamadas ocorrem diretamente no código C++ ou no LLVM-IR gerado pela análise semântica do compilador.
 
 \begin{lstlisting}[style=cpp, caption={Assinatura da função \texttt{InitializeInterpreter}.}, label={lst:initialize-interpreter}]
 uintptr_t InitializeInterpreter(const uint8_t* model_data,
@@ -94,7 +95,7 @@ uintptr_t InitializeInterpreter(const uint8_t* model_data,
 \end{lstlisting}
 
 \subsection{\texttt{GetInputTensor} e \texttt{GetOutputTensor}}
-Funções simples que retornam ponteiros para os tensores de entrada e saída do modelo, respectivamente. Esses ponteiros são utilizados para leitura e escrita dos dados posteriormente. As funções recebem como parâmetro o \textit{handle} do modelo e também o index do tensor desejado. Modelos podem ter mais de um tensor de entrada ou saída, ou seja , um modelo pode retornar diferentes arrays de saída dependendo da sua arquitetura.
+Estas são funções simples que retornam ponteiros para os tensores de entrada e saída do modelo, respectivamente. Esses ponteiros são utilizados para leitura e escrita dos dados posteriormente. As assinaturas das funções são mostradas no \hyperref[lst:get-tensor]{Código~\ref*{lst:get-tensor}}, elas recebem como parâmetro o \textit{handle} do modelo e também o index do tensor desejado. Modelos podem ter mais de um tensor de entrada ou saída, ou seja , um modelo pode retornar diferentes arrays de saída dependendo da sua arquitetura.
 
 \begin{lstlisting}[style=cpp, caption={Assinatura das funções \texttt{GetInputTensor} e \texttt{GetOutputTensor}.}, label={lst:get-tensor}]
 uintptr_t GetOutputTensor(uintptr_t instance_handle, size_t index, int);
@@ -106,9 +107,7 @@ uintptr_t GetInputTensor(uintptr_t instance_handle, size_t index, int);
 \subsection{Convenção de Tipos de Dados e Quantização}
 Modelos de TinyML frequentemente usam tipos de dados otimizados, como inteiros de 8 bits, para economizar memória e acelerar o processamento. O \textit{wrapper} simplifica isso para o usuário da RL. As funções do \hyperref[lst:get-tensor-value]{Código~\ref*{lst:get-tensor-value}} convertem automaticamente valores de ponto flutuante para o formato quantizado exigido pelo modelo e vice-versa. O desenvolvedor em RL pode trabalhar sempre com float, e o \textit{wrapper} cuida de toda a matemática de conversão internamente. Para tensores quantizados, o \textit{wrapper} aplica o mapeamento linear baseado nos parâmetros de escala (\texttt{scale}) e ponto zero (\texttt{zero\_point}) do tensor, conforme as formulas presentes no \hyperref[lst:get-quant]{Código~\ref*{lst:get-quant}}.
 
-Enquanto que as funções \texttt{SetTensorValue} e \texttt{GetTensorAsFloat} são para manipular valores individuais, as funções \texttt{SetTensorArray} e \texttt{GetTensorArray} permitem manipular arrays inteiros dos tensores.
-
-
+Enquanto que as funções \texttt{SetTensorValue} e \texttt{GetTensorAsFloat} são para manipular valores individuais, as funções \texttt{SetTensorArray} e \texttt{GetTensorArray} permitem manipular arrays inteiros dos tensores. As assinaturas dessas funções podem ser vistas no \hyperref[lst:get-tensor-value]{Código~\ref*{lst:get-tensor-value}}.
 
 \begin{lstlisting}[style=cpp,caption={Formúlas de quantização e desquantização.}, label={lst:get-quant}]
 int32_t valor_quantizado = (int32_t)roundf((valor_float / scale) + (zero_point));
@@ -127,10 +126,18 @@ void GetTensorArray(uintptr_t tensor_handle, float* values, size_t max_count, in
 \end{lstlisting}
 
 \subsection{\texttt{InvokeInterpreter}}
-Essa é uma função responsável pela inferência do modelo. Ela aciona o TFLM para executar o modelo com os dados de entrada fornecidos. É o “cérebro” da operação, funcionando como um botão de ação.
+Essa é uma função simples responsável pela inferência do modelo. Ela aciona o TFLM para executar o modelo com os dados de entrada fornecidos. É o “cérebro” da operação, funcionando como um botão de ação. Sua assinatura está no \hyperref[lst:invoke]{Código~\ref*{lst:invoke}}, ela recebe apenas o \textit{handle} do modelo como parâmetro.
 
 \begin{lstlisting}[style=cpp, caption={Assinatura da função \texttt{InvokeInterpreter}.}, label={lst:invoke}]
 void InvokeInterpreter(uintptr_t instance_handle, int);
+\end{lstlisting}
+
+\subsection{\texttt{DestroyInterpreter}}
+Essa é uma função simples e semelhante a anterior, é responsável por liberar os recursos alocados para a instância do modelo, evitando vazamentos de memória. Sua assinatura está no \hyperref[lst:destroy]{Código~\ref*{lst:destroy}}, ela recebe apenas o \textit{handle} do modelo como parâmetro.
+
+
+\begin{lstlisting}[style=cpp, caption={Assinatura da função \texttt{DestroyInterpreter}.}, label={lst:destroy}]
+void DestroyInterpreter(uintptr_t instance_handle, int);
 \end{lstlisting}
 
 \section{Fluxo de Trabalho de Inferência}
@@ -141,7 +148,7 @@ Para realizar uma inferência com um modelo TinyML utilizando o \textit{wrapper}
         
     \item Acesso aos tensores (\texttt{GetInputTensor} e \texttt{GetOutputTensor}): Com o \textit{handle} do modelo, é possível obter ponteiros para os tensores de entrada e saída, que são utilizados para leitura e escrita dos dados.
         
-    \item Fornecimento dos dados de entrada (\texttt{SetTensorValue}) e (\texttt{SetTensorArray}): A partir dos handles dos tensores, os dados de entrada são inicializados.
+    \item Fornecimento dos dados de entrada (\texttt{SetTensorValue}) e (\texttt{SetTensorArray}): A partir dos \textit{handles} dos tensores, os dados de entrada são inicializados.
         
     \item Execução da inferência (\texttt{InvokeInterpreter}): Esta função é acionada para que os dados de entrada possam ser processados pelo modelo, gerando os resultados no tensor de saída.
         
@@ -150,7 +157,7 @@ Para realizar uma inferência com um modelo TinyML utilizando o \textit{wrapper}
     \item Liberação de recursos (\texttt{DestroyInterpreter}): Essa função pode ser chamada para liberar os recursos para a instância do modelo, evitando vazamentos de memória.
 \end{enumerate}
 
-\section{Biblioteca padrão \texttt{tflm.rob}} 
+\section{Biblioteca padrão \texttt{tflm.rob}}\label{sec:bib-padrao}
 
 A biblioteca padrão \texttt{tflm.rob} foi criada para servir como um passo intermediário entre a adaptação do front-end e o desenvolvimento do \textit{wrapper} C. Ela contém as declarações de todas as funções do \textit{wrapper}, como mostrado no \hyperref[lst:bib-rob]{Código~\ref*{lst:bib-rob}}, permitindo que programas escritos em RL chamem essas funções diretamente, sem a necessidade de modificar o compilador.
 
@@ -160,10 +167,7 @@ Além de facilitar a validação das funções do \textit{wrapper}, a biblioteca
 
 Para utilizar alguma biblioteca padrão da RL, basta incluir no início do código a importação correspondente com a palavra chave \texttt{use} seguida do caminho relativo a pasta \texttt{lib}. No caso do TFLM, a linha de importação é \texttt{use "ai.tflm";}, uma vez que o arquivo se encontra na diretório \texttt{lib/ai/tflm.rob} do Robcmp.
 
-\lstset{language=rob,
-emph=[1]{},
-}
-\begin{lstlisting}[caption={Biblioteca padrão \texttt{tflm.rob}}, label={lst:bib-rob}]
+\begin{lstlisting}[style=rob, caption={Biblioteca padrão \texttt{tflm.rob}}, label={lst:bib-rob}]
 enum KERNELS{
   ADD = 0,
   AVERAGE_POOL_2D = 1,
@@ -205,14 +209,11 @@ void VerifyModelData(uint8[] model_data);
 
 \section{Ampliação da Robotics Language}
 
-As novas palavras chaves são: model , invoke, .input e .output. Cada uma com sua funcionalidade.
+As novas palavras chaves da RL foram criadas com o intuíto de possibilitar uma experiência de desenvolvimento mais fluida, fácil e intuitiva para o usuário final. Com essas novas palavras chaves, o desenvolvedor consegue declarar um modelo, fornecer os dados de entrada, executar a inferência e obter os resultados de forma direta e simplificada.
 
-O código a seguir mostra um exemplo simples de utilização das novas palavras chaves.
+O \hyperref[lst:nova-sintaxe]{Código~\ref*{lst:nova-sintaxe}} mostra um exemplo simples de utilização das novas palavras-chave. Esse exemplo baseia-se em um uso real de um modelo TinyML disponível no repositório do TFLM: um modelo de predição de valores de seno denominado ``hello\_world\_model''. Neste exemplo, primeiro são declaradas as constantes necessárias, como o tamanho da arena de memória e os \textit{kernels} utilizados pelo modelo. Em seguida, o modelo é carregado a partir do arquivo TFLite, e os dados de entrada são fornecidos diretamente ao modelo. Após isso, a inferência é executada com a palavra-chave \texttt{invoke} e, finalmente, os resultados são obtidos diretamente do modelo.
 
-\lstset{language=rob,
-morekeywords=[1]{portmode, mcu ,digitalport, model, invoke},
-}
-\begin{lstlisting}[caption={Exemplo de código com a nova sintaxe para inferência de um modelo tflite.}, label={fig:nova_sintaxe}]
+\begin{lstlisting}[style=rob, caption={Exemplo de código com a nova sintaxe para inferência de um modelo tflite.}, label={lst:nova-sintaxe}]
 int16 main() {
 	// 1. Define os dados de entrada, um buffer para a saida e o tamanho da arena.
 	const arena_size = 8000;
@@ -243,9 +244,11 @@ Para a implementação dessa nova sintaxe, foram necessárias modificações no 
   morecomment=[s]{/*}{*/},
   morestring=[b]",
   alsoletter={_},
-  emph={TOK_MODEL, TOK_INVOKE, TOK_MODEL_INPUT, TOK_MODEL_OUTPUT}, emphstyle=\color{blue}\bfseries,
+  emph={TOK_MODEL, TOK_INVOKE, TOK_MODEL_INPUT, TOK_MODEL_OUTPUT},
+  emphstyle=\color{blue}\bfseries,
 }
-\lstset{
+
+\lstdefinestyle{flex}{
   language=Flex,
   basicstyle=\ttfamily\footnotesize,
   keywordstyle=\color{blue}\bfseries,
@@ -259,12 +262,11 @@ Para a implementação dessa nova sintaxe, foram necessárias modificações no 
 }
 
 \subsection{Análise léxica}
-O arquivo Flex responsável pela análise léxica do Robcmp é o \texttt{Language.l}, cujo objetivo é identificar os tokens da linguagem RL. Foram adicionados quatro novos tokens para suportar as palavras‑chave e as funcionalidades: \texttt{TOK\_MODEL}, \texttt{TOK\_INVOKE}, \texttt{TOK\_MODEL\_INPUT} e \texttt{TOK\_MODEL\_OUTPUT}.
+O arquivo Flex responsável pela análise léxica do Robcmp é o \texttt{Language.l}, cujo objetivo é identificar os tokens da linguagem RL. Foram adicionados quatro novos tokens para suportar as palavras-chave e as funcionalidades: \texttt{TOK\_MODEL}, \texttt{TOK\_INVOKE}, \texttt{TOK\_MODEL\_INPUT} e \texttt{TOK\_MODEL\_OUTPUT}.
 
-Enquanto as expressões regulares para os tokens \texttt{TOK\_MODEL} e \texttt{TOK\_INVOKE} são simples, correspondendo diretamente às palavras‑chave ``model'' e ``invoke'', as expressões para \texttt{TOK\_MODEL\_INPUT} e \texttt{TOK\_MODEL\_OUTPUT} são mais complexas: identificam padrões formados por um identificador seguido de ``.input'' ou ``.output'' e capturam o lexema completo para uso posterior nas análises sintática e semântica.
+Enquanto as expressões regulares para os tokens \texttt{TOK\_MODEL} e \texttt{TOK\_INVOKE} são simples, correspondendo diretamente às palavras-chave ``model'' e ``invoke'', as expressões para \texttt{TOK\_MODEL\_INPUT} e \texttt{TOK\_MODEL\_OUTPUT} são mais complexas: identificam padrões formados por um identificador seguido de ``.input'' ou ``.output'' e capturam o lexema completo para uso posterior nas análises sintática e semântica.
 
-
-\begin{lstlisting}[language=Flex,caption={Novos \textit{tokens} do \textit{Scanner} Flex.},label={lst:language-l}]
+\begin{lstlisting}[style=Flex,caption={Novos \textit{tokens} do \textit{Scanner} Flex.},label={lst:language-l}]
 "model"					{ return TOK_MODEL; }  // TFLM
 "invoke"				{ return TOK_INVOKE; } // TFLM
 
@@ -282,33 +284,9 @@ No Robcmp, os arquivos responsáveis pela análise sintática são \texttt{Langu
 
 Este trabalho concentrou-se principalmente no arquivo \texttt{Language.y}, onde foram adicionadas novas regras sintáticas à gramática principal da linguagem, e também no arquivo \texttt{LanguageHeader.y}, para suportar os novos tokens e novos tipos.
 
-Inicialmente, antes de criar as novas regras sintáticas, foi necessário adicionar os novos tokens ao arquivo \texttt{LanguageHeader.y}, conforme mostrado no  \hyperref[lst:language-header]{Código~\ref*{lst:language-header}}. Além disso, foi preciso definir um novo tipo de dado para representar os modelos TinyML. Esse tipo foi adicionado ao arquivo \texttt{Header.y}, responsável por definir todos os tipos possíveis da AST de um programa, conforme mostrado no \hyperref[lst:language-types]{Código~\ref*{lst:language-types}}.
+Inicialmente, antes de criar as novas regras sintáticas, foi necessário adicionar os novos tokens ao arquivo \texttt{LanguageHeader.y}, conforme mostrado no  \hyperref[lst:language-header]{Código~\ref*{lst:language-header}}. Além disso, foi preciso definir um novo tipo de dado para representar os modelos TinyML, esse tipo recebeu o nome de \texttt{ModelNode}. Esse tipo foi adicionado ao arquivo \texttt{Header.y}, responsável por definir todos os tipos possíveis da AST de um programa, conforme mostrado no \hyperref[lst:language-types]{Código~\ref*{lst:language-types}}.
 
-
-\lstdefinelanguage{Bison}{
-sensitive=true,
-morekeywords={\%token,\%left,\%right,\%nonassoc,\%union,\%type,\%start,\%prec, |},
-morecomment=[l]{//},
-morecomment=[s]{/*}{*/},
-morestring=[b]",
-alsoletter={_\%} 
-}
-\lstset{
-    language=Bison,
-    basicstyle=\ttfamily\footnotesize,
-    keywordstyle=\color{blue}\bfseries,
-    commentstyle=\color{gray}\itshape,
-    stringstyle=\color{red},
-    numbers=left,
-    stepnumber=1,
-    breaklines=true,
-    showstringspaces=false,
-    tabsize=4,
-    emph={},
-    literate={\$}{{\$}}1 {@}{{@}}1 {\{}{{\{}}1 {\}}{{\}}}1,
-}
-
-\begin{lstlisting}[language=Bison,caption={Novos tokens adicionados no \texttt{LanguageHeader.y}.},label={lst:language-header}]
+\begin{lstlisting}[style=Bison, caption={Novos tokens adicionados no \texttt{LanguageHeader.y}.},label={lst:language-header}]
 %token TOK_MODEL TOK_INVOKE TOK_MODEL_INPUT TOK_MODEL_OUTPUT
 \end{lstlisting}
 
@@ -320,7 +298,7 @@ Após a fase de preparação, as novas regras sintáticas são definidas, juntam
 
 Depois que o compilador reconhece uma sequencia de tokens que se encaixa nessas novas regras sintáticas, ele cria os nós correspondentes na AST. Esses nós são instâncias da classe \texttt{ModelNode}, que encapsula todas as informações relevantes sobre o modelo TinyML, como o nome do modelo, o tipo de operação (entrada, saída ou invocação), os parâmetros associados e a localização no código-fonte para fins de depuração.
 
-\begin{lstlisting}[language=Bison,caption={Declaração dos tokens e das regras sintáticas no \texttt{Language.y}.},label={lst:language-rules}, escapeinside={(*@}{@*)}, literate={\$}{{\$}}1 {@}{{@}}1, columns=flexible, keepspaces=true]
+\begin{lstlisting}[style=Bison,caption={Declaração dos tokens e das regras sintáticas no \texttt{Language.y}.},label={lst:language-rules}, escapeinside={(*@}{@*)}, literate={\$}{{\$}}1 {@}{{@}}1, columns=flexible, keepspaces=true]
 %type <node> model_stmt invoke_stmt
 %type <ident> TOK_MODEL_INPUT TOK_MODEL_OUTPUT
 
@@ -367,9 +345,9 @@ A análise semântica no Robcmp é realizada por diversos arquivos C++ que são 
 
 O método mais importante dentro das classes/tipos de nós do Robcmp é o \texttt{generate}. Ele funciona como um visitor e é chamado pelo compilador ao percorrer a AST. No caso do \texttt{ModelNode}, dependendo das características do nó, o \texttt{generate} gera o código LLVM-IR correspondente para a declaração do modelo, invocação do modelo ou manipulação dos tensores de entrada e saída.
 
-O comportamento da análise semântica se divide em duas operações principais: o processamento da declaração de um modelo (\texttt{model\_stmt}) e o processamento do acesso aos seus membros (\texttt{.input}, \texttt{.output} e \texttt{invoke}). O método \texttt{generate} inicial é visto no \hyperref[lst:modelnode-generate]{Código~\ref*{lst:modelnode-generate}}, onde é decidido qual operação será realizada com base na existência dos \texttt{params}, que são os parâmetros: o nome do arquivo do modelo, o \texttt{tensor\_arena} e a lista de kernels. A presença desses parâmetros indica uma declaração de modelo, enquanto a ausência deles indica um acesso aos membros, que também inclui a invocação do modelo.
+O comportamento da análise semântica se divide em duas operações principais: o processamento da declaração de um modelo (\texttt{model\_stmt}) e o processamento do acesso aos seus membros (\texttt{.input}, \texttt{.output} e \texttt{invoke}). O método \texttt{generate} inicial é visto no \hyperref[lst:modelnode-generate]{Código~\ref*{lst:modelnode-generate}}, onde é decidido qual operação será realizada com base na existência dos \texttt{params}, que são os parâmetros: o nome do arquivo do modelo, o \texttt{tensor\_arena} e a lista de \textit{kernels}. A presença desses parâmetros indica uma declaração de modelo, enquanto a ausência deles indica um acesso aos membros, que também inclui a invocação do modelo.
 
-\begin{lstlisting}[language=C++, caption={Método \texttt{generate} da classe \texttt{ModelNode}.}, escapeinside={(*@}{@*)}, label={lst:modelnode-generate}]
+\begin{lstlisting}[style=cpp, caption={Método \texttt{generate} da classe \texttt{ModelNode}.}, escapeinside={(*@}{@*)}, label={lst:modelnode-generate}]
 Value* ModelNode::generate(FunctionImpl *func, BasicBlock *block, BasicBlock *allocblock) {
     if (!getScope()) (*@ \{ @*)
         setScope(func);
@@ -392,7 +370,7 @@ Esse método é responsável por gerar o código LLVM-IR necessário para declar
 
   \item Validação do Arquivo de Modelo: o compilador verifica se o arquivo do modelo especificado nos parâmetros existe e é acessível. Caso contrário, um erro semântico é gerado.
   \item Validação dos outros Parâmetros: o compilador verifica se os parâmetros \texttt{arena\_size} e \texttt{kernels} existem e são válidos. Caso contrário, um erro semântico é gerado.
-  \item Geração de código LLVM-IR: cria várias variáveis globais que armazenam os dados do modelo, tamanho dos dados do modelo, \texttt{tensor\_arena}, instância do interpretador e o array de kernels.
+  \item Geração de código LLVM-IR: cria várias variáveis globais que armazenam os dados do modelo, tamanho dos dados do modelo, \texttt{tensor\_arena}, instância do interpretador e o array de \textit{kernels}.
   \item Chamada da função do \textit{wrapper} C \texttt{InitializeInterpreter}: o compilador gera uma chamada para a função \texttt{InitializeInterpreter} do \textit{wrapper} C, passando os parâmetros necessários, e armazena o \textit{handle} retornado.
   \item Retorna o \textit{handle} do modelo: o método retorna o \textit{handle} do modelo, que será utilizado em chamadas subsequentes para manipular o modelo.
 
@@ -402,7 +380,7 @@ Esse método é responsável por gerar o código LLVM-IR necessário para declar
 Esse método é responsável por rotear o acesso aos membros depenendo do nome do membro acessado. Inicialmente o método verifica se o modelo foi declarado anteriormente, caso contrário, um erro semântico é gerado. Em seguida, dependendo do nome do membro acessado, o método chama uma das três funções específicas: \texttt{generateInputAccess}, \texttt{generateOutputAccess} ou \texttt{generateInvoke}. Caso o nome do membro não seja reconhecido, um erro semântico é gerado, conforme mostrado no \hyperref[lst:generate-member-access]{Código~\ref*{lst:generate-member-access}}.
 
 
-\begin{lstlisting}[language=C++, caption={Roteamento do método \texttt{generateMemberAccess}.}, escapeinside={(*@}{@*)}, label={lst:generate-member-access}]
+\begin{lstlisting}[style=cpp, caption={Roteamento do método \texttt{generateMemberAccess}.}, escapeinside={(*@}{@*)}, label={lst:generate-member-access}]
     if (memberName == "input") (*@ \{ @*)
         return generateInputAccess(func, block, allocblock, modelInstance);
     (*@ \} @*) else if (memberName == "output") (*@ \{ @*)
@@ -430,10 +408,12 @@ Este método é responsável por realizar verificações quanto ao índice forne
 \subsubsection{\texttt{generateOutputAccess} (\texttt{.output})}
 Este método é responsável por gerar o código LLVM-IR responsável por resgatar valores do tensor de saída do modelo. Ele se assemelha bastante ao método \texttt{generateInputAccess}, com algumas diferenças importantes. O método realiza as seguintes etapas principais:
 
+\textbf{COMENTÁRIO LUIZ: Ainda está errada essa subsection, aguardando o problema no output ser resolvido}
+
 \begin{enumerate}
     \item Prepara o índice do tensor: caso o índice não seja fornecido, o valor padrão é 0.
-    \item Chama a função \texttt{GetOutputTensor} do \textit{wrapper} C: o compilador gera chamadas para essa função, passadno o \textit{handle} do modelo e o índice do tensor, para obter o ponteiro para o tensor de saída.
-    \item Chama a função \texttt{AllocAndGetTensorArray} do \textit{wrapper} C: essa fução recebe o pontiero do tensor de saída, quantidade de elementos a serem resgatados(que pode ser nulo) e retorna um ponteiro para um array alocado dinamicamente contendo os valores em ponto flutuante.
+    \item Chama a função \texttt{GetOutputTensor} do \textit{wrapper} C: o compilador gera chamadas para essa função, passando o \textit{handle} do modelo e o índice do tensor, para obter o ponteiro para o tensor de saída.
+    \item Chama a função \texttt{AllocAndGetTensorArray} do \textit{wrapper} C: essa função recebe o ponteiro do tensor de saída, quantidade de elementos a serem resgatados (que pode ser nulo) e retorna um ponteiro para um array alocado dinamicamente contendo os valores em ponto flutuante.
     \item Retorna o ponteiro do array: o método retorna o ponteiro para o array alocado dinamicamente.
 \end{enumerate}
 
@@ -453,11 +433,11 @@ Apesar da implementação ser funcional, algumas partes apresentam certas limita
 
 Um aspecto que poderia ser melhorado é a convenção adotada para entrada e saída de dados nos modelos. Atualmente, o desenvolvedor deve utilizar variáveis ou vetores de ponto flutuante, deixando a responsabilidade de conversão e quantização para o \textit{wrapper}. Essa abordagem simplifica o uso da solução ao encapsular toda a a complexidade, porém, pode introduzir algumas problemáticas. Por exemplo, ao utilizar métodos de arredondamento simples durante a quantização ou conversão de tipos, pode ocorrer perda de precisão, especialmente em aplicações sensíveis a erros.
 
-Outra limitação está relacionada aos tokens que tratam o acesso aos tensores de entrada e saída de um modelo. Eles exigem uma sintaxe específica: um identificador seguido de ``.input'' ou ``.output''. Isso restringe a linguagem RL, impedindo que variáveis chamadas \texttt{input} e \texttt{output} sejam criadas dentro de tipos de dados personalizados. O ideal seria não criar esses tokens na linguagem, mas sim tratar o acesso aos tensores como membros normais de um tipo de dado personalizado. Dessa forma, durante a analise semântica, o compilador verificaria se o identificador é um modelo, e então permitiria o acesso aos membros \texttt{input} e \texttt{output} normalmente.
+Outra limitação está relacionada aos tokens que tratam o acesso aos tensores de entrada e saída de um modelo. Eles exigem uma sintaxe específica: um identificador seguido de ``.input'' ou ``.output''. Isso restringe a linguagem RL, impedindo que campos chamados \texttt{input} e \texttt{output} sejam declarados em tipos definidos pelo usuário (\textit{types}, na terminologia da RL). O ideal seria não criar esses tokens na linguagem, mas sim tratar o acesso aos tensores como membros normais de um tipo definidos pelo usuário. Dessa forma, durante a analise semântica, o compilador verificaria se o identificador é um modelo, e então permitiria o acesso aos membros \texttt{input} e \texttt{output} normalmente.
 
 Por fim, a classe \texttt{ModelNode} concentra uma grande quantidade de responsabilidades e utiliza um esquema de roteamento interno para decidir qual operação realizar. Isso resulta em um código menos modular e mais acoplado. O ideal seria dividir cada funcionalidade em classes separadas, como \texttt{ModelDeclarationNode}, \texttt{ModelInvokeNode}, \texttt{ModelInputNode} e \texttt{ModelOutputNode}.
 
 Todas essas limitações podem ser solucionadas com um refatoramento e uma revisão de código, que podem ser realizados em trabalhos futuros.
 
 \subsection{Portabilidade e Suporte a Diferentes Arquiteturas}
-Este trabalho tem como objetivo inicial implementar o suporte para o TFLM na arquitetura ARM Cortex-M, utilizada por diversas famílias de microcontroladores, como a STM32. No entanto, o desenvolvedor pode escolher a arquitetura desejada para gerar o firmware, desde que o Robcmp e o TFLM ofereçam suporte à plataforma escolhida. Para isso, é necessário compilar tanto o wrapper quanto a biblioteca do TFLM para a arquitetura específica, conforme demonstrado na \hyperref[sec:ambiente-experimental]{Seção~\ref*{sec:ambiente-experimental}}. Dessa forma, o sistema pode ser adaptado para diferentes plataformas, bastando seguir o procedimento de compilação adequado.
+Este trabalho tem como objetivo inicial implementar o suporte para o TFLM na arquitetura ARM Cortex-M, utilizada por diversas famílias de microcontroladores, como a STM32. No entanto, o desenvolvedor pode escolher a arquitetura desejada para gerar o firmware, desde que o Robcmp e o TFLM ofereçam suporte à plataforma escolhida. Para isso, é necessário compilar tanto o \textit{wrapper} quanto a biblioteca do TFLM para a arquitetura específica, conforme demonstrado na \hyperref[sec:ambiente-experimental]{Seção~\ref*{sec:ambiente-experimental}}. Dessa forma, o sistema pode ser adaptado para diferentes plataformas, bastando seguir o procedimento de compilação adequado.

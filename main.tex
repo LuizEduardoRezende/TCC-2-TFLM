@@ -65,6 +65,30 @@
 \tcbuselibrary{breakable}
 \definecolor{listbggray}{rgb}{0.95,0.95,0.95} % Fundo cinza claro para listings
 
+\lstdefinelanguage{Bison}{
+sensitive=true,
+morekeywords={\%token,\%left,\%right,\%nonassoc,\%union,\%type,\%start,\%prec, |},
+morecomment=[l]{//},
+morecomment=[s]{/*}{*/},
+morestring=[b]",
+alsoletter={_\%} 
+}
+
+\lstdefinestyle{Bison}{
+    language=Bison,
+    basicstyle=\ttfamily\footnotesize,
+    keywordstyle=\color{blue}\bfseries,
+    commentstyle=\color{gray}\itshape,
+    stringstyle=\color{red},
+    numbers=left,
+    stepnumber=1,
+    breaklines=true,
+    showstringspaces=false,
+    tabsize=4,
+    emph={},
+    literate={\$}{{\$}}1 {@}{{@}}1 {\{}{{\{}}1 {\}}{{\}}}1,
+}
+
 % --- 
 % CONFIGURAÇÕES DE PACOTES
 % --- 
@@ -223,15 +247,139 @@
 % Imprime uma página indicando o início dos anexos
 \partanexos
 
-\chapter{Exemplo de Formulário}\label{anexo:formAluno}
+\chapter{Testes Unitários}\label{apendice:teste-sintaxe}
 
-Este formulário tem como objetivo ...:
+\begin{lstlisting}[style=rob, caption={Teste unitário com a biblioteca padrão \texttt{tflm.rob}}, label={lst:teste-bib-rob}]
+use ai.tflm;
 
-Pergunta 1:
+spam_model_data = {0x1c,0x0,0x0,0x0,0x54
+// (Conteudo do modelo em bytes omitido para brevidade)
+};
 
-Pergunta 2:
+spam_model_data_size = 83304;
 
-Pergunta 3:
+// Arena de memoria para tensores (16KB para garantir espaco suficiente)
+tensor_arena = {0u:4096};
+
+// Kernels necessarios para o modelo Spam, Gather, Mean, FullyConnected e Softmax
+required_kernels = {36, 40, 9, 25};
+
+
+int8 test_init() {
+    h = InitializeInterpreter(spam_model_data, tensor_arena, required_kernels);
+    if(h == 0){ 
+        return 1;
+    }
+    DestroyInterpreter(h);
+    return 0;
+}
+
+// Testa inferencia para frase nao SPAM
+int8 test_infer_not_spam() {
+    h = InitializeInterpreter(spam_model_data, tensor_arena, required_kernels);
+    if(h == 0) {
+        return 1;
+    }
+
+    in = GetInputTensor(h, 0);
+    out = GetOutputTensor(h, 0);
+
+    if(in == 0 or out == 0) {
+        DestroyInterpreter(h);
+        return 2;
+    }
+    // "This is a great article thank you for the information"
+    dados = {1.0, 82.0, 70.0, 214.0, 55.0, 98.0, 84.0, 47.0, 89.0, 26.0, 73.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+    output = {0.0, 0.0};
+
+    SetTensorArray(in, dados, 20);
+    InvokeInterpreter(h);
+    GetTensorArray(out, output, 2);
+    DestroyInterpreter(h);
+
+    PrintFloat(output[1]);
+
+    if (output[1] > 0.1) {
+        return 3;
+    }
+    return 0;
+}
+
+// Testa inferencia para frase SPAM
+int8 test_infer_spam() {
+    h = InitializeInterpreter(spam_model_data, tensor_arena, required_kernels);
+    if(h == 0) {
+        return 1;
+    }
+
+    in = GetInputTensor(h, 0);
+    out = GetOutputTensor(h, 0);
+
+    if(in == 0 or out == 0) {
+        DestroyInterpreter(h);
+        return 2;
+    }
+    // Frase: "win free money online click www site com"
+    dados = {1.0, 93.0, 326.0, 72.0, 8.0, 485.0, 24.0, 35.0, 6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+    output = {0.0, 0.0};
+
+    SetTensorArray(in, dados, 20);
+    InvokeInterpreter(h);
+    GetTensorArray(out, output, 2);
+    DestroyInterpreter(h);
+
+    PrintFloat(output[1]);
+
+    if(output[1] < 0.90) {
+        return 3;
+    }
+    return 0;
+}
+
+// Testa falha ao obter tensor de entrada (indice invalido)
+int8 test_input_tensor_fail() {
+    h = InitializeInterpreter(spam_model_data, tensor_arena, required_kernels);
+    if(h == 0) {
+        return 1;
+    }
+    in = GetInputTensor(h, 99); // indice invalido
+    DestroyInterpreter(h);
+    if(in != 0) {
+        return 2;
+    }
+    return 0;
+}
+
+// Testa falha ao obter tensor de saida (indice invalido)
+int8 test_output_tensor_fail() {
+    h = InitializeInterpreter(spam_model_data, tensor_arena, required_kernels);
+    if(h == 0) {
+        return 1;
+    }
+    out = GetOutputTensor(h, 99); // indice invalido
+    DestroyInterpreter(h);
+    if(out != 0) {
+        return 2;
+    }
+    return 0;
+}
+
+// Executa todos os testes unitarios
+int8 main() {
+    result = 0;
+
+    if(test_init() != 0){ result = 1;}
+    if(test_infer_not_spam() != 0) {result = 2;}
+    if(test_infer_spam() != 0) {result = 3;}
+    if(test_input_tensor_fail() != 0) {result = 4;}
+    if(test_output_tensor_fail() != 0) {result = 5;}
+
+    PrintFloat(float(result));
+
+    return result; // Todos passaram
+}
+\end{lstlisting}
+
 
 
 \end{anexosenv}

@@ -1,7 +1,7 @@
 
-\usepackage{listings}
-\usepackage{xcolor}
-\usepackage{roblang}
+\ProvidesPackage{roblang}[2025/11/12 Robotics Language listings]
+\RequirePackage{listings}
+\RequirePackage{xcolor}
 
 \definecolor{codegreen}{rgb}{0,0.6,0}
 \definecolor{codegray}{rgb}{0.5,0.5,0.5}
@@ -10,7 +10,17 @@
 \definecolor{codeyellow}{rgb}{0.72,0.5,0.19}
 %184,128,49}
 
+\lstdefinelanguage{rob}{
+    %alsodigit = {-},
+    keywords = {while,loop,if,else,delay,print,return,register,at,volatile,const,asm,type,interface,implements,use,copy,bind,to,singleton,transient,naked,weak,section,inline,noinline,enum,portmode,mcu,digitalport,model,invoke},
+    morekeywords=[2]{void,char,int8,int16,int32,int64,uint8,uint16,uint32,uint64,long,float,double,bool},
+    comment=[l]{//},
+    morecomment=[s]{/*}{*/},
+    string=[b]",
+}
+
 \lstdefinestyle{rob}{
+    language=rob,
     backgroundcolor=\color{backcolour},   
     commentstyle=\color{codegreen},
     keywordstyle=\color{magenta},
@@ -32,26 +42,5 @@
     lineskip=-1pt,
     %mathescape=true,
 }
+
 \lstset{style=rob}
-
-\lstdefinelanguage{rob}{
-    %alsodigit = {-},
-    keywords = {while,loop,if,else,delay,print,return,register,at,volatile,const,asm,type,interface,implements,use,copy,bind,to,singleton,transient,naked,weak,section,inline,noinline,enum},
-    morekeywords=[2]{void,char,int8,int16,int32,int64,uint8,uint16,uint32,uint64,long,float,double,bool},
-    comment=[l]{//},
-    morecomment=[s]{/*}{*/},
-    string=[b]",
-}
-
-
-% \lstset{language=rob,morekeywords=[2]{return_type},morekeywords=[3]{this,switch,case,default}}
-% \begin{lstlisting}[float=tp,caption=Interface switch-based template for dynamic dispatch using the id field., label=lst:interfacestub]
-% return_type interface_name.method_name(this) {
-%     switch (this.id) {
-%         case x: return x_type.method_name(this);
-%         case y: return y_type.method_name(this);
-%         case z: return z_type.method_name(this);
-%         default: halt();
-%     }
-% }
-% \end{lstlisting}
