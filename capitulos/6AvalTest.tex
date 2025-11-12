@@ -178,17 +178,24 @@ Esses testes verificam se o modelo de ML é carregado corretamente, se as entrad
 
 \section{Resultados da Validação da Eficiência e Análise Comparativa}
 
+No processo de validação da eficiência, os mesmos testes unitários foram utilizados para medir o desempenho dos três métodos de desenvolvimento de firmwares: utilizando a nova sintaxe da RL, utilizando a biblioteca padrão do Robcmp para TinyML e desenvolvendo diretamente em C++ com o TFLM. No processo de compilação foi uitlizada a flag \texttt{-Oz} para otimização do tamanho do binário final. Além disso, também foram utilziadas várias tags de otimização no processo de linkedição com o \textit{linker} Clang.
+
+Para calcular o tempo de execução foi utilizado a ferramenta de \textit{benchmark} de linha de comando Hyperfine. Diferente do utilitário padrão time, o Hyperfine automatiza a execução múltipla do binário para garantir relevância estatística, calculando a média e o desvio padrão dos tempos de execução. A ferramenta foi configurada para executar uma fase de aquecimento(\textit{warmup}) de 10 iterações antes da medição, visando mitigar a latência de I/O (leitura de disco) e estabilizar o uso de cache do processador. Em seguida foram realizadas 100 iterações de medição com o binário em questão para obter uma média confiável do tempo de execução.
+
+Para atingir resultador verídicos, os binários foram executados isoladamente, sem outros processos concorrentes na máquina de desenvolvimento. O tempo de medição utilizado foi a média do tempo real de execução (\textit{Time (mean)}) fornecido pelo Hyperfine.
+
+A \hyperref[notebook-tamanho]{Tabela~\ref*{notebook-tamanho}} apresenta o tamanho do binário final gerado para cada modelo TinyML testado, enquanto a \hyperref[comparativo]{Tabela~\ref{comparativo}} exibe o tempo de execução médio de cada modelo. Ambos os testes foram realizados na máquina de desenvolvimento. 
 
 \begin{table}[h]
 \centering 
 \caption{Tamanho do binário (\textit{bytes}) na máquina de desenvolvimento}
-\label{comparativo}
+\label{notebook-tamanho}
     \begin{tabular}{cccc}
     \toprule
     \textbf{Modelo TinyML} & \textbf{Sintaxe} & \textbf{Biblioteca padrão} & \textbf{TFLM(C++)}  \\ \midrule
-    Classificador de Spam   \\ 
-    Preditor de Seno quantizado \\
-    Preditor de Seno  \\ 
+    Classificador de Spam & - & 591K & 188K \\ 
+    Preditor de Seno quantizado & - & 512K & 88K \\ 
+    Preditor de Seno & - & 512K & 88K \\ 
     \bottomrule
     
     \end{tabular}
@@ -201,9 +208,9 @@ Esses testes verificam se o modelo de ML é carregado corretamente, se as entrad
     \begin{tabular}{cccc}
     \toprule
     \textbf{Modelo TinyML} & \textbf{Sintaxe} & \textbf{Biblioteca padrão} & \textbf{TFLM(C++)}  \\ \midrule
-    Classificador de Spam   \\ 
-    Preditor de Seno quantizado \\
-    Preditor de Seno  \\ 
+    Classificador de Spam & - & 2.301 & 1.112 \\ 
+    Preditor de Seno quantizado & - & 2.150 & 1.059 \\ 
+    Preditor de Seno & - & 2.125 & 1.035 \\ 
     \bottomrule
     
     \end{tabular}
