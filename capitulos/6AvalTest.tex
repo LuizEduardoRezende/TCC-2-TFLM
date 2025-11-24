@@ -1,9 +1,9 @@
 \chapter{Avaliação e Testes}\label{cap:analise}
 
-Este capítulo abordará tudo relacionado ao processo de avaliação e testes da solução proposta. Inicialmente, serão descritos os procedimentos metodológicos adotados, incluindo também quais foram os recursos utilizados na execução dos testes, como \textit{hardware}, \textit{software} e outras ferramentas relevantes. Em seguida, será detalhada a configuração do ambiente experimental, fornecendo informações sobre como replicar o ambiente utilizado para os testes. Por fim, serão apresentados os resultados obtidos durante os testes, acompanhados de uma análise crítica e uma discussão final sobre os resultados.
+Este capítulo abordará tudo relacionado ao processo de avaliação e testes da solução proposta. Inicialmente, serão descritos os procedimentos metodológicos adotados, incluindo também quais foram os recursos utilizados na execução dos testes, como \textit{hardware}, \textit{software}, modelos de ML e outras ferramentas relevantes. Em seguida, será detalhada a configuração do ambiente experimental, fornecendo informações sobre como replicar o ambiente utilizado para os testes. Por fim, serão apresentados os resultados obtidos durante os testes, acompanhados de uma análise crítica e uma discussão final sobre os resultados.
 
 \section{Metodologia}
-Esta seção descreve a metodologia adotada para avaliação e testes da solução, apresentando o ambiente de desenvolvimento (\textit{software} e \textit{hardware}), bem como os procedimentos de validação funcional e a análise comparativa de eficiência.
+Esta seção descreve a metodologia adotada para avaliação e testes da solução, apresentando o ambiente de desenvolvimento (\textit{software}, \textit{hardware} e modelos), bem como os procedimentos de validação funcional e a análise comparativa de eficiência.
 
 \subsection{\textit{Software} e \textit{Hardware} Utilizados}
 Os novos recursos e funcionalidades implementados diretamente na linguagem RL foram desenvolvidos com o auxílio das ferramentas Flex (versão 2.6.4) e Bison (versão 3.8.2), responsáveis por gerar os analisadores léxico e sintático do Robcmp. Além disso, a análise semântica foi escrita em C++ conforme a estrutura do compilador. Por outro lado, a nova biblioteca padrão foi desenvolvida com a própria linguagem RL, criando um arquivo \texttt{.rob} que continha todas as declarações das funções do \textit{wrapper} C do TFLM.
@@ -11,6 +11,22 @@ Os novos recursos e funcionalidades implementados diretamente na linguagem RL fo
 O ambiente de desenvolvimento foi o Visual Studio Code (versão 1.106.1), com o auxílio de duas extensões principais: o PlatformIO (versão 6.1.18), para depurar e exportar os \textit{firmwares} para as placas, e o RobCmpSyntax (versão 1.0), que fornece o realce de sintaxe para arquivos .rob. Além disso, para a validação dos experimentos, foram utilizados \textit{scripts} de automação (Makefiles personalizados) que padronizaram a execução dos testes unitários, garantindo que as flags de otimização (como \texttt{-Oz}) e linkedição fossem aplicadas consistentemente em todas as amostras comparativas.
 
 A máquina de desenvolvimento utilizada foi um \textit{notebook} Lenovo IdeaPad 3 15ITL6, equipado com processador Intel® Core™ i7-1165G7, 16 GB de RAM e sistema operacional Ubuntu 24.04.1 LTS. Além da máquina de desenvolvimento, a execução e validação das aplicações ocorreram em uma placa com o microcontrolador STM32F407VET6, da família STM32, popularmente chamada de Black STM32F407VET6. Essa placa conta com um processador ARM Cortex-M4 rodando a 168 MHz, 192 KB de RAM e 512 KB de memória Flash.
+
+\subsection{Modelos de Machine Learning Adotados}
+Para garantir a abrangência dos testes, foram selecionados diferentes modelos de TinyML, variando em complexidade e tipo de dado de entrada (numérico, texto, áudio e imagem). Alguns foram selecionados do repositório do próprio TFLM no Github, enquanto que outros foram adquiridos na internet. Os modelos utilizados são:
+
+\begin{description}
+    \item[Preditor de Seno:] O modelo "Hello World" do TinyML. É um modelo simples que tem como objetivo prever valores de uma onda senoidal com base em valores de entrada $x$ no intervalo de $0$ a $2\pi$.
+    
+    \item[Preditor de Seno Quantizado:] Uma variação do modelo anterior, porém submetido ao processo de quantização pós-treinamento. Seus pesos e ativações foram convertidos de ponto flutuante para inteiros (8 bits).
+
+    \item[Classificador de Spam:] Esse classificador de spam é um modelo de processamento de linguagem natural (NLP) que categoriza mensagens de texto como "spam" ou "não spam". Baixado do site Kaggle, é um modelo demonstrativo gerado pelo TensorFlow Lite Model Maker, treinado a partir de um arquivo de vocabulário contendo a lista de palavras e seus tokens equivalentes. Ele recebe como entrada um tensor de 20 inteiros (Int32) representando tokens de uma sentença codificada. Sua saída é um vetor de ponto flutuante (Float32) contendo duas probabilidades: a de ser spam e a de não ser.
+    
+    \item[Micro Speech:] O Micro Speech é uma Rede Neural Convolucional (CNN) compacta ($<20$ kB) projetada para reconhecer as palavras-chave "yes" e "no". Ele opera em conjunto com um modelo pré-processador que converte amostras de áudio bruto ($16$ KHz) em espectrogramas compostos por 49 features. O classificador recebe esses dados como entrada e retorna as probabilidades para quatro categorias: silence, unknown, yes e no.
+
+    \item[Person Detection:] Este modelo de detecção de pessoas utiliza uma rede neural de aproximadamente 250 kB para reconhecer a presença humana. Ele recebe como entrada um tensor de inteiros de 8 bits (int8) contendo os dados brutos de uma imagem em escala de cinza. O modelo processa esse vetor e gera como saída pontuações (scores) que classificam a cena entre as categorias "pessoa" e "não pessoa".
+\end{description}
+
 
 \subsection{Procedimentos de Validação Funcional}
 A etapa de validação funcional teve como objetivo verificar se a solução proposta cumpria o que prometia, sem levar em consideração sua eficiência, aplicabilidade, facilidade ou qualquer outro fator que mede sua qualidade.
