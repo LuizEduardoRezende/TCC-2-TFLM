@@ -2,12 +2,12 @@
 
 Neste capítulo são apresentados os detalhes da implementação das funcionalidades propostas neste trabalho, incluindo a contrução da camada de interoperabilidade, a implementação da biblioteca padrão em RL e as adaptações realizadas no \textit{frontend} do compilador Robcmp.
 
-O código-fonte completo pode ser encontrado no repositório online \url{https://github.com/LuizEduardoRezende/robcmp/tree/tflm-front-end}. O referido repositório é um \textit{fork} do projeto Robcmp original, e todo o desenvolvimento foi realizado em duas \textit{branchs} dedicadas, \texttt{tflm} e \texttt{tflm-front-end}. Futuramente, será submetido um \textit{pull request} para integrar estas contribuições à \textit{branch} principal do projeto Robcmp, a fim de que as novas funcionalidades fiquem disponíveis para a comunidade.
+O código-fonte completo pode ser encontrado no repositório online \url{https://github.com/LuizEduardoRezende/robcmp/tree/tflm-front-end}. O referido repositório é um \textit{fork} do projeto Robcmp original, e todo o desenvolvimento pode ser encontrado na \textit{branch} \texttt{tflm-front-end}. Futuramente, será submetido um \textit{pull request} para integrar estas contribuições à \textit{branch} principal do projeto Robcmp, a fim de que as novas funcionalidades fiquem disponíveis para a comunidade.
 
 \section{Arquitetura da Camada de Interoperabilidade}\label{sec:arq-camada-compatibilidade}
 O processo de compilação e linkedição do Robcmp pode ser explicado da seguinte forma: programas escritos com a extensão \texttt{.rob} são compilados pelo Robcmp e geram arquivos objeto (\texttt{.o}). Já as bibliotecas externas, como o TFLM ou outras, são compiladas separadamente, resultando em arquivos de biblioteca estática (\texttt{.a}). Após a compilação de todos os programas e bibliotecas necessários, o \textit{linker} entra em ação com o objetivo de resolver todas as referências entre os componentes e criar um executável único, que pode ser chamado de \textit{firmware}.
 
-É válido ressaltar que a biblioteca estática do TFLM pode ser facilmente compilada para diferentes arquiteturas, utilizando o sistema de \texttt{Makefile} do proprio \textit{framework}. Diferente do arquivo objeto do programa em RL, que é gerado pelo próprio compilador Robcmp. Por fim, o \textit{wrapper} C é compilado por meio do arquivo \texttt{CMakeLists.txt} do Robcmp, que resolve todas as dependências e gera a biblioteca estática correspondente. 
+É válido ressaltar que a biblioteca estática do TFLM pode ser facilmente compilada para diferentes arquiteturas, utilizando o sistema de \texttt{Makefile} do proprio \textit{framework}. Diferente do arquivo objeto do programa em RL, que é gerado pelo próprio compilador Robcmp. Por fim, a ponte entre a RL e o TFLM é feita pelo \textit{wrapper} C, que também é compilado por um sistema de Maekfile dentro do diretório \textsl{test/tflm-tests}, gerando sua própria biblioteca estática.
 
 A \hyperref[fig:linker]{Figura~\ref*{fig:linker}} ilustra a arquitetura de compilação e interoperabilidade entre os componentes, as caixas azuis representam os códgios fontes dos diferentes componentes, enquanto que as caixas verdes representam os artefatos gerados após a compilação de cada componente. Após serem compilados, o linker unifica todos os artefatos em um único executável final.
 
@@ -42,14 +42,16 @@ A estrutura \texttt{TFLM\_Instance} encapsula todos os objetos principais do TFL
 
 \begin{lstlisting}[style=cpp, caption={Struct \texttt{TFLM\_Instance} encontrada no começo do \textit{wrapper}.}, label={lst:tflm-instance}]
 struct TFLM_Instance {
-    tflite::RecordingMicroInterpreter* interpreter;
-    tflite::RecordingMicroAllocator* allocator;
+    tflite::MicroInterpreter* interpreter;
+    tflite::MicroAllocator* allocator;       
     MutableResolver* resolver;
 };
 \end{lstlisting}
 
 \subsection{Tipo enumerado \texttt{KernelType} e função \texttt{RegisterOp}}
-A enumeração \texttt{KernelType}, inspirada na enumeração \texttt{BuiltinOperator} do próprio TFLM, foi criada com o intuito de possibilitar o registro dinâmico de operadores (\textit{kernels}) necessários para a execução de um modelo. Tanto a enumeração quanto a função \texttt{RegisterOp} atuam em conjunto para garantir que apenas os \textit{kernels} essenciais, como \texttt{CONV\_2D} ou \texttt{FULLY\_CONNECTED}, sejam carregados dinamicamente conforme a necessidade especificada pelo desenvolvedor.
+A enumeração \texttt{KernelType}, inspirada na enumeração \texttt{BuiltinOperator} do próprio TFLM, foi criada com o intuito de possibilitar o registro dinâmico de operadores (\textit{kernels}) necessários para a execução de um modelo. Tanto a enumeração quanto a função \texttt{RegisterOp} atuam em conjunto para garantir que apenas os \textit{kernels} essenciais, como \texttt{CONV\_2D} ou \texttt{FULLY\_CONNECTED}, sejam carregados dinamicamente conforme a necessidade especificada pelo desenvolvedor. 
+
+A função \texttt{RegisterOp} recebe como parâmetros o resolvedor de operações do TFLM e o tipo do \textit{kernel} a ser registrado. Utilizando uma estrutura de controle \texttt{switch-case}, a função verifica o tipo do \textit{kernel} e chama o método apropriado do resolvedor para registrá-lo. Além disso, ela contém diretivas de compilação condicional para incluir ou excluir o registro de determinados \textit{kernels} com base em flags de compilação, como \texttt{ENABLE\_ADD} ou \texttt{ENABLE\_AVERAGE\_POOL\_2D}. Caso o \textit{kernel} solicitado não esteja habilitado ou não seja suportado, a função imprime uma mensagem de aviso.
 
 \begin{lstlisting}[style=cpp, caption={Tipo enumerado \texttt{KernelType} e função \texttt{RegisterOp}.}, label={lst:kernel-type}]
 typedef enum {
@@ -61,20 +63,54 @@ typedef enum {
   /* ... demais operadores ... */
 } KernelType;
 
-void RegisterOp(tflite::MicroMutableOpResolver<100>* resolver, KernelType kernel_type) {
+void RegisterOp(tflite::MicroMutableOpResolver<TFLM_MAX_OPS>* resolver, KernelType kernel_type) {
     switch (kernel_type) {
-        case ADD: resolver->AddAdd(); break;
-        case AVERAGE_POOL_2D: resolver->AddAveragePool2D(); break;
-        case CONCATENATION: resolver->AddConcatenation(); break;
-        case CONV_2D: resolver->AddConv2D(); break;
-        /* ... demais casos ... */
+        
+#if ENABLE_ADD
+        case ADD:
+            resolver->AddAdd();
+            MicroPrintf("ADD registrado");
+            break;
+#endif
+
+#if ENABLE_AVERAGE_POOL_2D
+        case AVERAGE_POOL_2D:
+            resolver->AddAveragePool2D();
+            MicroPrintf("AVERAGE_POOL_2D registrado");
+            break;
+#endif
+    /* ... demais casos ... */
         default:
-            MicroPrintf("AVISO: Tipo de kernel nao mapeado: %d", kernel_type);
+            MicroPrintf("!!! Kernel %d nao suportado ou nao habilitado na compilacao", kernel_type);
             break;
     }
 }
-
 \end{lstlisting}
+
+\subsection{Configuração de Kernels: \texttt{kernel\_config.h}}
+Para facilitar a configuração dos \textit{kernels} disponíveis no \textit{wrapper}, foi criado o arquivo de cabeçalho \texttt{kernel\_config.h}. Nesse arquvio é possível habilitar ou desabilitar o suporte a cada \textit{kernel} individualmente, através de diretivas de pré-processamento. Cada \textit{kernel} possui uma diretiva \texttt{\#define ENABLE\_<NOME\_DO\_KERNEL>} conforme mostra o \hyperref[lst:kernel-config]{Código~\ref*{lst:kernel-config}}. Além disso, é possível habilitar ou desabilitar os logs de debug do TFLM, que são úteis para diagnóstico e depuração durante o desenvolvimento.
+
+A diretiva \texttt{\#pragma once} na primeira linha garante que o arquivo seja processado apenas uma vez pelo compilador evitando erros de duplicidade de definições.
+
+Esse tipo de otimização é crucial em sistemas embarcados, pois permite reduzir o tamanho final do binário (\textit{footprint}) ao excluir o código de operadores que não serão utilizados pelo modelo ou desabilitar os logs de debug. Isso garante que apenas os recursos estritamente necessários sejam linkados ao \textit{firmware} final.
+
+\begin{lstlisting}[style=cpp, caption={Arquivo de configuração \texttt{kernel\_config.h}.}, label={lst:kernel-config}]
+#pragma once
+
+// Configuracao de logging
+//1 = Habilitar logs de debug (MicroPrintf)
+//0 = Desabilitar logs de debug
+#define ENABLE_DEBUG_LOGS 0
+
+// Configuracao de kernels
+//1 = Habilitar kernel
+//0 = Desabilitar kernel
+#define ENABLE_ADD 0
+#define ENABLE_AVERAGE_POOL_2D 1
+#define ENABLE_CONCATENATION 0
+#define ENABLE_CONV_2D 1
+/* ... demais kernels ... */
+\end{lstlisting}   
 
 \subsection{\texttt{InitializeInterpreter}}
 É a primeira função a ser chamada em um fluxo de inferência, responsável por configurar o interpretador e outras instâncias necessárias para a execução do modelo, sua assinatura é apresentada no \hyperref[lst:initialize-interpreter]{Código~\ref*{lst:initialize-interpreter}}. Recebe como parâmetros os dados do modelo em formato de array de bytes, o buffer de memória pré-alocado (tensor arena) e a lista de \textit{kernels} a serem registrados. Retorna um identificador único (\textit{handle}) para a instância do modelo, do tipo \texttt{uintptr\_t}, um inteiro sem sinal cujo tamanho varia de acordo com a arquitetura para a qual o \textit{wrapper} foi compilado. Um inteiro é retornado porque o Robcmp não possui suporte a ponteiros nativos em sua linguagem.
@@ -83,7 +119,7 @@ void RegisterOp(tflite::MicroMutableOpResolver<100>* resolver, KernelType kernel
 
 A necessidade desses parâmetros surge quando o Robcmp utiliza a biblioteca padrão do diretório \texttt{lib/ai/tflm.rob}, que contém as declarações das funções do wrapper conforme mostrado na \hyperref[lst:get-tensor-value]{Seção~\ref*{sec:bib-padrao}}. Essas declarações precisam estar alinhadas com as definições reais das funções no \textit{wrapper}. No arquivo \texttt{.rob}, para cada argumento que seja um vetor, é adicionado um argumento extra do tipo inteiro que representa o tamanho desse vetor. Isso é uma característica do compilador Robcmp para tratar vetores em chamadas de função. Portanto, para manter a consistência entre declarações e definições, esses parâmetros adicionais são incluídos nas definições das funções no \textit{wrapper}.
 
-No caso de uso do \textit{wrapper} sem a biblioteca padrão \texttt{tflm.rob}, ou seja, quando as chamadas são geradas diretamente pelo front-end do compilador, esses parâmetros adicionais não são necessários, pois as chamadas ocorrem diretamente no código C++ ou no LLVM-IR gerado pela análise semântica do compilador.
+No caso de uso do \textit{wrapper} sem a biblioteca padrão \texttt{tflm.rob}, ou seja, quando as chamadas são geradas diretamente pelo \textit{frontend} do compilador, esses parâmetros adicionais não são necessários, pois as chamadas ocorrem diretamente no código C++ ou no LLVM-IR gerado pela análise semântica do compilador.
 
 \begin{lstlisting}[style=cpp, caption={Assinatura da função \texttt{InitializeInterpreter}.}, label={lst:initialize-interpreter}]
 uintptr_t InitializeInterpreter(const uint8_t* model_data,
@@ -105,9 +141,15 @@ uintptr_t GetInputTensor(uintptr_t instance_handle, size_t index, int);
 
 
 \subsection{Convenção de Tipos de Dados e Quantização}
-Modelos de TinyML frequentemente usam tipos de dados otimizados, como inteiros de 8 bits, para economizar memória e acelerar o processamento. O \textit{wrapper} simplifica isso para o usuário da RL. As funções do \hyperref[lst:get-tensor-value]{Código~\ref*{lst:get-tensor-value}} convertem automaticamente valores de ponto flutuante para o formato quantizado exigido pelo modelo e vice-versa. O desenvolvedor em RL pode trabalhar sempre com float, e o \textit{wrapper} cuida de toda a matemática de conversão internamente. Para tensores quantizados, o \textit{wrapper} aplica o mapeamento linear baseado nos parâmetros de escala (\texttt{scale}) e ponto zero (\texttt{zero\_point}) do tensor, conforme as formulas presentes no \hyperref[lst:get-quant]{Código~\ref*{lst:get-quant}}.
+Modelos de TinyML frequentemente usam tipos de dados otimizados, como inteiros de 8 bits, para economizar memória e acelerar o processamento. O \textit{wrapper} simplifica isso para o usuário da RL, na medida em que permite que o desenvolvedor trabalhe sempre com valores de ponto flutuante (\texttt{float}), independentemente do tipo de dado real utilizado pelo modelo. Isso se mostra útil em situações onde os dados são recebidos de um sensor em ponto flutuante como temperatura, pressão ou aceleração. 
 
-Enquanto que as funções \texttt{SetTensorValue} e \texttt{GetTensorAsFloat} são para manipular valores individuais, as funções \texttt{SetTensorArray} e \texttt{GetTensorArray} permitem manipular arrays inteiros dos tensores. As assinaturas dessas funções podem ser vistas no \hyperref[lst:get-tensor-value]{Código~\ref*{lst:get-tensor-value}}.
+As funções \texttt{SetTensorArray} e \texttt{SetTensorValue} do \hyperref[lst:get-tensor-value]{Código~\ref*{lst:get-tensor-value}} convertem automaticamente valores de ponto flutuante para o formato quantizado exigido pelo modelo e vice-versa. O desenvolvedor em RL pode trabalhar sempre com float, e o \textit{wrapper} cuida de toda a matemática de conversão internamente. Para tensores quantizados, o \textit{wrapper} aplica o mapeamento linear baseado nos parâmetros de escala (\texttt{scale}) e ponto zero (\texttt{zero\_point}) do tensor, conforme as formulas presentes no \hyperref[lst:get-quant]{Código~\ref*{lst:get-quant}}.
+
+Apesar dessa estrátegia de deixar o trabalho todo para o \textit{wrapper} cobrir grande partes dos casos de uso, existem situações em que o modelo espera dados já quantizados, ou seja, dados já em inteiros de 8 bits. Nesses casos, a função \texttt{SetTensorFromIntArray} permite que o desenvolvedor forneça diretamente um array de inteiros, evitando a necessidade de conversão para ponto flutuante e posterior quantização. Isso é útil quando os dados já estão no formato quantizado, como em casos onde os dados são coletados de sensores que fornecem leituras em inteiros ou quando os dados são pré-processados externamente antes de serem passados ao modelo. 
+
+Para essas situações, a função \texttt{SetTensorFromIntArray} do \hyperref[lst:get-tensor-value]{Código~\ref*{lst:get-tensor-value}} aceita um array de inteiros de 16 bits, que são então tranformados para 8bits (apenas corta os bits excedentes) e copiados diretamente para o tensor, sem qualquer conversão adicional.
+
+Por fim, para o resgate dos valores após a inferência, as funções \texttt{GetTensorAsFloat} e \texttt{GetTensorArray} também realizam a desquantização automática(caso seja necessário), convertendo os valores quantizados de volta para ponto flutuante usando as mesmas fórmulas de mapeamento linear.
 
 \begin{lstlisting}[style=cpp,caption={Formúlas de quantização e desquantização.}, label={lst:get-quant}]
 int32_t valor_quantizado = (int32_t)roundf((valor_float / scale) + (zero_point));
@@ -118,9 +160,11 @@ float valor_float = scale * (valor_quantizado - zero_point);
 \begin{lstlisting}[style=cpp, caption={Assinatura das funções de resgate e passagem de valores.}, label={lst:get-tensor-value}]
 void SetTensorValue(uintptr_t tensor_handle, size_t index, float value, int);
 
-float GetTensorAsFloat(uintptr_t tensor_handle, size_t index, int);
-
 void SetTensorArray(uintptr_t tensor_handle, const float* values, size_t count, int);
+
+void SetTensorFromIntArray(uintptr_t tensor_handle, const int16_t* values, size_t count, int);
+
+float GetTensorAsFloat(uintptr_t tensor_handle, size_t index, int);
 
 void GetTensorArray(uintptr_t tensor_handle, float* values, size_t max_count, int);
 \end{lstlisting}
@@ -148,22 +192,22 @@ Para realizar uma inferência com um modelo TinyML utilizando o \textit{wrapper}
         
     \item Acesso aos tensores (\texttt{GetInputTensor} e \texttt{GetOutputTensor}): Com o \textit{handle} do modelo, é possível obter ponteiros para os tensores de entrada e saída, que são utilizados para leitura e escrita dos dados.
         
-    \item Fornecimento dos dados de entrada (\texttt{SetTensorValue}) e (\texttt{SetTensorArray}): A partir dos \textit{handles} dos tensores, os dados de entrada são inicializados.
+    \item Fornecimento dos dados de entrada (\texttt{SetTensorArray}) e (\texttt{SetTensorFromIntArray}): A partir dos \textit{handles} dos tensores, os dados de entrada são inicializados.
         
     \item Execução da inferência (\texttt{InvokeInterpreter}): Esta função é acionada para que os dados de entrada possam ser processados pelo modelo, gerando os resultados no tensor de saída.
         
-    \item Obtenção dos resultados (\texttt{GetTensorAsFloat} e \texttt{GetTensorArray}): Após a inferência, essas funções são usadas para ler os resultados do tensor de saída. A função retorna os dados em ponto flutuante da mesma forma padronizada que os dados de entrada foram passados.
+    \item Obtenção dos resultados (\texttt{GetTensorAsFloat} e \texttt{GetTensorArray}): Após a inferência, essas funções são usadas para ler os resultados do tensor de saída. Elas retornam o dado em formato de ponto flutuante.
 
     \item Liberação de recursos (\texttt{DestroyInterpreter}): Essa função pode ser chamada para liberar os recursos para a instância do modelo, evitando vazamentos de memória.
 \end{enumerate}
 
 \section{Biblioteca padrão \texttt{tflm.rob}}\label{sec:bib-padrao}
 
-A biblioteca padrão \texttt{tflm.rob} foi criada para servir como um passo intermediário entre a adaptação do front-end e o desenvolvimento do \textit{wrapper} C. Ela contém as declarações de todas as funções do \textit{wrapper}, como mostrado no \hyperref[lst:bib-rob]{Código~\ref*{lst:bib-rob}}, permitindo que programas escritos em RL chamem essas funções diretamente, sem a necessidade de modificar o compilador.
+A biblioteca padrão \texttt{tflm.rob} foi criada para servir como um passo intermediário entre a adaptação do \textit{frontend} e o desenvolvimento do \textit{wrapper} C. Ela contém as declarações de todas as funções do \textit{wrapper}, como mostrado no \hyperref[lst:bib-rob]{Código~\ref*{lst:bib-rob}}, permitindo que programas escritos em RL chamem essas funções diretamente, sem a necessidade de modificar o compilador.
 
 Ao declarar as funções no arquivo \texttt{tflm.rob}, o compilador passa a reconhecer sua existência e possibilita chamadas a partir do código \texttt{.rob}. As implementações reais estão presentes na biblioteca estática do \textit{wrapper} C, utilizada em tempo de execução. Na etapa de linkedição, o \textit{linker} resolve as referências entre o código objeto do programa e a biblioteca estática do \textit{wrapper}, produzindo o executável final.
 
-Além de facilitar a validação das funções do \textit{wrapper}, a biblioteca \texttt{tflm.rob} também funciona como uma forma de apresentar o trabalho desenvolvido até o momento, servindo como mecanismo de segurança caso a modificação do front-end não esteja completa ou apresente problemas, antes da integração definitiva ao compilador.
+Além de facilitar a validação das funções do \textit{wrapper}, a biblioteca \texttt{tflm.rob} também funciona como uma forma de apresentar o trabalho desenvolvido até o momento, servindo como mecanismo de segurança caso a modificação do \textit{frontend} não esteja completa ou apresente problemas, antes da integração definitiva ao compilador.
 
 Para utilizar alguma biblioteca padrão da RL, basta incluir no início do código a importação correspondente com a palavra chave \texttt{use} seguida do caminho relativo a pasta \texttt{lib}. No caso do TFLM, a linha de importação é \texttt{use "ai.tflm";}, uma vez que o arquivo se encontra na diretório \texttt{lib/ai/tflm.rob} do Robcmp.
 
@@ -186,13 +230,14 @@ void DestroyInterpreter(uint64 instance_handle);
 uint64 GetInputTensor(uint64 instance_handle, uint64 index);
 uint64 GetOutputTensor(uint64 instance_handle, uint64 index);
 
-// Manipulacao de dados dos tensores
+// Manipulacao de dados de entrada dos tensores
 void SetTensorValue(uint64 tensor_handle, uint64 index, float value);
+void SetTensorArray(uint64 tensor_handle, float[] values, uint64 count);
+void SetTensorFromIntArray(uint64 tensor_handle, int16[] values, uint64 count);
+
+// Manipulacao de dados de saida dos tensores
 float GetTensorAsFloat(uint64 tensor_handle, uint64 index);
 uint64 GetTensorSize(uint64 tensor_handle);
-
-// Manipulacao de arrays completos
-void SetTensorArray(uint64 tensor_handle, float[] values, uint64 count);
 void GetTensorArray(uint64 tensor_handle, float[] values, uint64 max_count);
 
 // Informacoes sobre tensores
@@ -205,6 +250,9 @@ void InvokeInterpreter(uint64 instance_handle);
 // Funcoes de Analise de modelo
 void DiagnoseModel(uint8[] model_data);
 void VerifyModelData(uint8[] model_data);
+
+// Funcao simples para imprimir float com quebras de linha
+void PrintFloat(float value);
 \end{lstlisting}
 
 \section{Ampliação da Robotics Language}
@@ -219,6 +267,7 @@ int16 main() {
 	const arena_size = 8000;
 	const kernels = {9};
 	dados = {1.57};
+    output = {0.0};
 
 	// 2. Carrega o modelo
 	model meu_modelo("meu_modelo.tflite", arena_size, kernels);
@@ -431,13 +480,13 @@ Este método é responsável por gerar o código LLVM-IR necessário para invoca
 \subsection{Limitações}
 Apesar da implementação ser funcional, algumas partes apresentam certas limitações e desvantagens que poderiam ter sido aprimoradas. No entanto, devido ao tempo disponível e ao grande escopo do projeto, algumas decisões foram tomadas visando a conclusão do trabalho.
 
-Um aspecto que poderia ser melhorado é a convenção adotada para entrada e saída de dados nos modelos. Atualmente, o desenvolvedor deve utilizar variáveis ou vetores de ponto flutuante, deixando a responsabilidade de conversão e quantização para o \textit{wrapper}. Essa abordagem simplifica o uso da solução ao encapsular toda a a complexidade, porém, pode introduzir algumas problemáticas. Por exemplo, ao utilizar métodos de arredondamento simples durante a quantização ou conversão de tipos, pode ocorrer perda de precisão, especialmente em aplicações sensíveis a erros.
+Um aspecto que pode ser melhorado é a convenção adotada para entrada e saída de dados nos modelos. Atualmente, caso o desenvolvedor utilize variáveis ou vetores de ponto flutuante, ele deixará a responsabilidade de conversão e quantização para o \textit{wrapper}. Essa abordagem simplifica o uso da solução ao encapsular toda a a complexidade, porém, pode introduzir algumas problemáticas. Por exemplo, ao utilizar métodos de arredondamento simples durante a quantização ou conversão de tipos, pode ocorrer perda de precisão, especialmente em aplicações sensíveis a erros.
 
 Outra limitação está relacionada aos tokens que tratam o acesso aos tensores de entrada e saída de um modelo. Eles exigem uma sintaxe específica: um identificador seguido de ``.input'' ou ``.output''. Isso restringe a linguagem RL, impedindo que campos chamados \texttt{input} e \texttt{output} sejam declarados em tipos definidos pelo usuário (\textit{types}, na terminologia da RL). O ideal seria não criar esses tokens na linguagem, mas sim tratar o acesso aos tensores como membros normais de um tipo definidos pelo usuário. Dessa forma, durante a analise semântica, o compilador verificaria se o identificador é um modelo, e então permitiria o acesso aos membros \texttt{input} e \texttt{output} normalmente.
 
 Por fim, a classe \texttt{ModelNode} concentra uma grande quantidade de responsabilidades e utiliza um esquema de roteamento interno para decidir qual operação realizar. Isso resulta em um código menos modular e mais acoplado. O ideal seria dividir cada funcionalidade em classes separadas, como \texttt{ModelDeclarationNode}, \texttt{ModelInvokeNode}, \texttt{ModelInputNode} e \texttt{ModelOutputNode}.
 
-Todas essas limitações podem ser solucionadas com um refatoramento e uma revisão de código, que podem ser realizados em trabalhos futuros.
+Algumas dessas limitações podem ser melhoradas em trabalhos futuros. Isso inclui um refatoramento do fluxo do \textit{frontend} e a criação de novas estratégias no \textit{wrapper} para contornar a perda de precisão durante a quantização.
 
 \subsection{Portabilidade e Suporte a Diferentes Arquiteturas}
-Este trabalho tem como objetivo inicial implementar o suporte para o TFLM na arquitetura ARM Cortex-M, utilizada por diversas famílias de microcontroladores, como a STM32. No entanto, o desenvolvedor pode escolher a arquitetura desejada para gerar o firmware, desde que o Robcmp e o TFLM ofereçam suporte à plataforma escolhida. Para isso, é necessário compilar tanto o \textit{wrapper} quanto a biblioteca do TFLM para a arquitetura específica, conforme demonstrado na \hyperref[sec:ambiente-experimental]{Seção~\ref*{sec:ambiente-experimental}}. Dessa forma, o sistema pode ser adaptado para diferentes plataformas, bastando seguir o procedimento de compilação adequado.
+Este trabalho tem como objetivo inicial implementar o suporte para o TFLM na arquitetura ARM Cortex-M, utilizada por diversas famílias de microcontroladores, como a STM32. No entanto, o desenvolvedor pode escolher a arquitetura desejada para gerar o \textit{firmware}, desde que o Robcmp e o TFLM ofereçam suporte à plataforma escolhida. Para isso, é necessário compilar tanto o \textit{wrapper} quanto a biblioteca do TFLM para a arquitetura específica, conforme demonstrado na \hyperref[sec:ambiente-experimental]{Seção~\ref*{sec:ambiente-experimental}}. Dessa forma, o sistema pode ser adaptado para diferentes plataformas, bastando seguir o procedimento de compilação adequado.

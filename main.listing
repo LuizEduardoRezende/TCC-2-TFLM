@@ -1,14 +1,11 @@
 # Mostra todos os comandos disponiveis
-make -f Makefile.tflm help
+make help
 
-# Compila e gera o executavel na pasta build
-make -f Makefile.tflm FILE=syntax-spam
+# Compila e executa todos os testes unitarios presentes na pasta
+make
 
-# Remove os arquivos gerados desse programa
-make -f Makefile.tflm FILE=syntax-spam clean
+# Remove os arquivos objeto(.o) e executaveis gerados por programas
+make clean
 
-# Remove os arquivos objeto(.o) gerados por programas
-make -f Makefile.tflm clean-all
-
-# Executa o programa que foi gerado na pasta build
-./build/syntax-spam
+# Executa o programa que foi gerado na pasta out
+./out/syntax-spam

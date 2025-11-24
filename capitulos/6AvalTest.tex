@@ -1,15 +1,14 @@
 \chapter{Avaliação e Testes}\label{cap:analise}
 
-Este capítulo abordará tudo relacionado ao processo de avaliação e testes da solução proposta. Inicialmente, serão descritos os procedimentos metodológicos adotados, incluindo também quais foram os recursos utilizados na execução dos testes, como hardware, software e outras ferramentas relevantes. Em seguida, será detalhada a configuração do ambiente experimental, fornecendo informações sobre como replicar o ambiente utilizado para os testes. Por fim, serão apresentados os resultados obtidos durante os testes, acompanhados de uma análise crítica e uma discussão final sobre os resultados.
+Este capítulo abordará tudo relacionado ao processo de avaliação e testes da solução proposta. Inicialmente, serão descritos os procedimentos metodológicos adotados, incluindo também quais foram os recursos utilizados na execução dos testes, como \textit{hardware}, \textit{software} e outras ferramentas relevantes. Em seguida, será detalhada a configuração do ambiente experimental, fornecendo informações sobre como replicar o ambiente utilizado para os testes. Por fim, serão apresentados os resultados obtidos durante os testes, acompanhados de uma análise crítica e uma discussão final sobre os resultados.
 
 \section{Metodologia}
+Esta seção descreve a metodologia adotada para avaliação e testes da solução, apresentando o ambiente de desenvolvimento (\textit{software} e \textit{hardware}), bem como os procedimentos de validação funcional e a análise comparativa de eficiência.
 
-Esta seção descreve a metodologia adotada para avaliação e testes da solução, apresentando o ambiente de desenvolvimento (software e hardware), bem como os procedimentos de validação funcional e a análise comparativa de eficiência.
-
-\subsection{Software e Hardware}
+\subsection{\textit{Software} e \textit{Hardware} Utilizados}
 Os novos recursos e funcionalidades implementados diretamente na linguagem RL foram desenvolvidos com o auxílio das ferramentas Flex (versão 2.6.4) e Bison (versão 3.8.2), responsáveis por gerar os analisadores léxico e sintático do Robcmp. Além disso, a análise semântica foi escrita em C++ conforme a estrutura do compilador. Por outro lado, a nova biblioteca padrão foi desenvolvida com a própria linguagem RL, criando um arquivo \texttt{.rob} que continha todas as declarações das funções do \textit{wrapper} C do TFLM.
 
-O ambiente de desenvolvimento foi o Visual Studio Code (versão 1.101), com o auxílio de duas extensões principais: o PlatformIO (versão 6.1.18), para depurar e exportar os \textit{firmwares} para as placas, e o RobCmpSyntax (versão 1.0), que fornece o realce de sintaxe para arquivos .rob.
+O ambiente de desenvolvimento foi o Visual Studio Code (versão 1.106.1), com o auxílio de duas extensões principais: o PlatformIO (versão 6.1.18), para depurar e exportar os \textit{firmwares} para as placas, e o RobCmpSyntax (versão 1.0), que fornece o realce de sintaxe para arquivos .rob. Além disso, para a validação dos experimentos, foram utilizados \textit{scripts} de automação (Makefiles personalizados) que padronizaram a execução dos testes unitários, garantindo que as flags de otimização (como \texttt{-Oz}) e linkedição fossem aplicadas consistentemente em todas as amostras comparativas.
 
 A máquina de desenvolvimento utilizada foi um \textit{notebook} Lenovo IdeaPad 3 15ITL6, equipado com processador Intel® Core™ i7-1165G7, 16 GB de RAM e sistema operacional Ubuntu 24.04.1 LTS. Além da máquina de desenvolvimento, a execução e validação das aplicações ocorreram em uma placa com o microcontrolador STM32F407VET6, da família STM32, popularmente chamada de Black STM32F407VET6. Essa placa conta com um processador ARM Cortex-M4 rodando a 168 MHz, 192 KB de RAM e 512 KB de memória Flash.
 
@@ -19,151 +18,44 @@ A etapa de validação funcional teve como objetivo verificar se a solução pro
 Nesta etapa, as novas funcionalidades foram validadas utilizando testes unitários, que foram executados tanto na máquina de desenvolvimento quanto na placa com o MCU. Esses testes foram projetados para verificar se cada nova funcionalidade implementada no Robcmp estava operando conforme o esperado. Foram criados diversos arquivos \texttt{.rob} que utilizavam diferentes modelos de ML, abrangendo uma variedade de cenários e casos de uso. Os testes foram desenvolvidos utilizando tanto a linguagem RL com as novas palavras-chave quanto a biblioteca padrão.
 
 \subsection{Validação da eficiência e Análise Comparativa}
-Para validar a eficiência da integração do TFLM à RL, foi realizada uma análise comparativa entre três abordagens de desenvolvimento de firmwares: os desenvolvidos com a nova sintaxe da RL, os que utilizaram a biblioteca padrão do Robcmp para TinyML e os desenvolvidos diretamente em C++ utilizando o ambiente do TFLM.
+Para validar a eficiência da integração do TFLM à RL, foi realizada uma análise comparativa entre três abordagens de desenvolvimento de \textit{firmwares}: os desenvolvidos com a nova sintaxe da RL, os que utilizaram a biblioteca padrão do Robcmp para TinyML e os desenvolvidos diretamente em C++ utilizando o ambiente do TFLM.
 
 Para garantir uma avaliação justa, ambos os testes foram conduzidos em um MCU idêntico e com o mesmo modelo de ML. Nesta avaliação, foram considerados critérios como a facilidade de desenvolvimento, a manutenibilidade do código, o tempo de execução e o tamanho final do executável.
 
+Para calcular o tempo de execução foi utilizado a ferramenta de \textit{benchmark} de linha de comando Hyperfine. Diferente do utilitário padrão \textit{time}, o Hyperfine automatiza a execução múltipla do binário para garantir relevância estatística, calculando a média e o desvio padrão dos tempos de execução. A ferramenta foi configurada para executar uma fase de aquecimento(\textit{warmup}) de 10 iterações antes da medição, visando mitigar a latência de I/O (leitura de disco) e estabilizar o uso de cache do processador. Em seguida foram realizadas 100 iterações de medição com o binário em questão para obter uma média confiável do tempo de execução.
+
+Para atingir resultados verídicos, os binários foram executados isoladamente, sem outros processos concorrentes na máquina de desenvolvimento. O tempo de medição utilizado foi a média do tempo real de execução (\textit{Time (mean)}) fornecido pelo Hyperfine.
+
 \section{Configuração do Ambiente Experimental}\label{sec:ambiente-experimental}
 
-\lstdefinestyle{terminal-abnt}{
-    language={},                        
-    backgroundcolor=\color{listbggray}, 
-    basicstyle=\ttfamily\small,         
-    keywordstyle=,                      % Estilo de keyword (vazio)
-    stringstyle=,                       % Estilo de string (vazio)
-    numbers=none,                       % Números de linha à esquerda
-    numberstyle=\tiny,                  % Estilo do número (sem cor)
-    numbersep=5pt,                      % Distância dos números
-    frame=none,                         % Sem bordas (como no seu main.pdf)
-    captionpos=t,                       % Posição da legenda (t = top), como no seu main.pdf
-    breaklines=true,                    % Quebra linhas longas
-    breakatwhitespace=true,             % Quebra apenas em espaços
-    showstringspaces=false,             % Não mostra símbolos para espaços
-    tabsize=2                           % Tamanho do TAB
-}
-\newtcblisting{abntbox}{
-    enhanced,
-    listing only,
-    colback=listbggray,     
-    colframe=listbggray,    
-    arc=3mm,                
-    left=2mm,
-    right=2mm,
-    top=2mm,
-    bottom=2mm,
-    fonttitle=\bfseries,
-    coltitle=black,         
-    listing options={style=terminal-abnt}
-}
+Para garantir facilitar o processo de compilação e execução dos testes, foi estabelecido um ambiente de desenvolvimento padronizado. Um guia detalhado com o passo a passo para a instalação das ferramentas, compilação do compilador modificado e configuração das dependências encontra-se disponível no \hyperref[apendice:guia-instalacao]{Apêndice~\ref*{apendice:guia-instalacao}}.
 
-Esta seção detalha os passos necessários para configurar o ambiente de desenvolvimento, isto envolve compilar o fork do Robcmp e replicar o sistema de build utilizado nos experimentos. 
+A estrutura do projeto foi organizada de modo que os testes relacionados ao TFLM ficassem isolados no diretório \texttt{test/tflm-tests}. Neste diretório, foi alocado um \texttt{Makefile} personalizado, responsável por automatizar todo o processo de compilação, linkedição e execução dos testes.
 
-No futuro, um novo desenvolvedor não precisará seguir estes passos pois o Robcmp já disponibilizará todas as possíveis bibliotecas pré-compiladas do \textit{wrapper} e do TFLM. Assim, o processo de desenvolvimento poderá ser feito através de forma automática e integrada ao PlatformIO, da mesma forma que já ocorre para programas embarcados convencionais. 
+Este \texttt{Makefile} executa as seguintes etapas principais para cada um dos arquivos de teste \texttt{.rob} presentes no diretório:
+\begin{enumerate}
+    \item Compila o código do \textit{wrapper} C do TFLM para gerar a biblioteca estática somente uma vez (caso seja necessario);
+    \item Invoca o compilador Robcmp para traduzir os arquivos fonte \texttt{.rob} em código objeto (\textit{.o});
+    \item Realiza a linkedição do código objeto gerado com as bibliotecas estáticas do TFLM (\texttt{libtensorflow-microlite.a}) e do \textit{wrapper} de compatibilidade desenvolvido.
+    \item Executa todos os binários gerados, exibindo \textit{PASS} ou \textit{FAILED}.
+\end{enumerate}
 
-Porém, esta seção é ainda é valiosa por ensinar o processo de instalação dos pacotes necessários, clonagem correta do repositório e compilação do Robcmp, tarefas obrigatórias para um novo desenvolvedor. Além disso, esta seção é útil para trabalhos futuros que desejem modificar o compilador Robcmp ou entender melhor sua integração com o TFLM.
+Para garantir a otimização do tamanho do binário final e a compatibilidade com o TFLM em ambiente embarcado, foram utilizadas diversas \textit{flags} de compilação e linkedição. As principais opções adotadas e suas respectivas funções estão descritas a seguir:
 
-\subsection{Pré-requisitos de Software}
-Antes de iniciar, é necessário garantir que os seguintes pacotes de software estejam instalados no sistema (preferencialmente um ambiente Linux, como o Ubuntu):
+\begin{description}
+    \item[\texttt{-fno-rtti} e \texttt{-fno-exceptions}:] Desabilitam informações de tipo em tempo de execução e o suporte a exceções do C++ na compilação do \textit{wrapper}.
+    \item[\texttt{-DTF\_LITE\_STATIC\_MEMORY=1}:] Define uma macro que instrui o TFLM a utilizar alocação de memória estática, o que é preferível em sistemas embarcados e necessário para compatibilidade com a RL.
+    \item[\texttt{-ffunction-sections} e \texttt{-fdata-sections}:] Forçam o compilador a colocar cada função e item de dados em sua própria seção de memória.
+    \item[\texttt{-Oz}:] Flag de compilação dos arquivos \texttt{.rob}. Nível de otimização agressivo focado na redução do tamanho do código gerado.
+    \item[\texttt{-Wl,--gc-sections}:] Realiza a coleta de lixo (\textit{garbage collection}) de seções não utilizadas.
+    \item[\texttt{-Wl,--strip-debug}:] Remove informações de depuração do binário final.
+    \item[\texttt{-Wl,--discard-all}:] Descarta todas as seções não essenciais do binário final.
+    \item[\texttt{-Wl,--build-id=none}:] Remove o identificador de build do binário final.
+    \item[\texttt{-Wl,--relax}]: Permite ao \textit{linker} otimizar instruções e endereços para reduzir o tamanho do código final.
+    \item[\texttt{-flto=thin}:] Habilita a Otimização em Tempo de Linkedição (\textit{Link Time Optimization}), permitindo que o otimizador analise o programa como um todo, e não apenas arquivo por arquivo.
+\end{description}
 
-\begin{itemize}
-    \item Git: Para controle de versão e download do repositório.
-    \item CMake: Para configurar o sistema de build do Robcmp.
-    \item Make: Para executar os scripts de compilação.
-    \item LLVM (versão 20+): Conjunto de ferramentas e bibliotecas para compilação.
-    \item Clang (versão 20+): Compilador C/C++ baseado no LLVM.
-    \item Flex (versão 2.6.4 ou similar): Gerador de analisador léxico.
-    \item Bison (versão 3.8.2 ou similar): Gerador de analisador sintático.
-\end{itemize}
-
-A maioria desses pacotes pode ser instalada em sistemas baseados em Debian/Ubuntu com os comandos:
-
-% \begin{lstlisting}[style=terminal-abnt]
-% sudo apt-get update
-% sudo apt-get install git cmake make g++ flex bison
-% \end{lstlisting}
-
-\begin{abntbox}
-sudo apt-get update
-sudo apt-get install git cmake make clang llvm flex bison
-\end{abntbox}
-
-\subsection{Download do Repositório e Submódulos}
-O fork do Robcmp utiliza submódulos do Git para gerenciar a dependência do TFLM. É necessário iniciar o submódulo existente após o clone com os seguintes comandos:
-
-\begin{abntbox}
-# Clona o repositorio fork do Robcmp
-git clone https://github.com/LuizEduardoRezende/robcmp.git
-
-# Navega ate o diretorio do repositorio
-cd robcmp
-
-# Seleciona a branch com o frontend do TFLM
-git checkout tflm-front-end
-
-# Inicializa e atualiza os submodulos
-git submodule update --init --recursive
-\end{abntbox}
-
-Talvez seja necessário atualizar o seu explorador de arquivos para vizualiar os novos arquivos criados, após a inicialização e atualização dos submódulos.
-
-\subsection{Processo de Compilação (\textit{Build})}
-O processo de compilação é dividido em duas etapas, conforme a arquitetura descrita na \hyperref[sec:arq-camada-compatibilidade]{Seção~\ref{sec:arq-camada-compatibilidade}}. Primeiro, compila-se a biblioteca estática do TFLM; em seguida, compila-se o Robcmp (que inclui o \textit{wrapper} C).
-
-Caso esteja buscando compilar para uma arquitetura especifica (ex: Cortex-M4), é possível verificar todas as arquiteturas suportadas pelo TFLM na documentação do \textit{GitHub} \footnote{\url{https://github.com/tensorflow/tflite-micro/blob/main/tensorflow/lite/micro/cortex_m_generic/README.md}}.
-
-Com uma arquitetura específica em mente, navegue até o diretório do submódulo do TFLM, depois use o sistema de Makefile do TFLM para compilar a biblioteca para a arquitetura desejada:
-
-\begin{abntbox}
-# Navega ate o diretorio do TFLM
-cd third_party/tflite-micro/
-
-# Compila para uma plataforma especifica
-make -f tensorflow/lite/micro/tools/make/Makefile TARGET=cortex_m_generic TARGET_ARCH=cortex-m4 microlite
-
-# Compila para a plataforma de sua maquina de desenvolvimento(linux, windows, etc)
-make -f tensorflow/lite/micro/tools/make/Makefile microlite
-\end{abntbox}
-
-Ao final deste processo, a biblioteca estática com nome padronizado deverá estar presente no diretório \texttt{third-party/\allowbreak tflite-micro/\allowbreak gen/\allowbreak (nome-da-arquitetura)/\allowbreak lib/\allowbreak libtensorflow-microlite.a}. Talvez seja necessário atualizar o seu explorador de arquivos para vizualiar os novos arquivos criados.
-
-Atenção, caso tenha feito a compilação de mais de uma biblioteca estática do TFLM, escolha apenas uma arquitetura para trabalhar por vez. Para que o build e a configuração do ambiente de desenvolvimento ocorram corretamente é necessário que exista apenas uma arquitetura dentro de \texttt{third-party/tflite-micro/gen}. Caso deseje trabalhar com multiplas arquiteturas, é recomendado que se crie cópias do repositório do Robcmp para cada arquitetura desejada.
-
-Com a biblioteca TFLM pronta, retorne ao diretório raiz do robcmp para compilar o projeto principal utilizando o CMake e o Make:
-
-\begin{abntbox}
-# Cria o diretorio de build e navega ate ele
-mkdir build
-cd build
-
-# Configura o projeto
-cmake ..
-
-# Compila o projeto (use -j para compilacao paralela, ex: -j6)
-make
-\end{abntbox}
-
-Se a compilação for bem-sucedida, o executável do compilador (arquivo \texttt{robcmp}) estará disponível dentro do diretório \texttt{build}, pronto para ser usado nos testes de validação.
-
-\subsection{Compilação de arquivos .rob que usam o TFLM (\texttt{Makefile.tflm})}
-
-Para conseguir compilar um programa \texttt{.rob} criado ou já existente basta utilizar o \texttt{Makefile.tflm} localizado na raíz do Robcmp. Este Makefile consegue compilar programas que estejam localizados dentro da pasta \texttt{test/tflm-tests}. A partir da raíz do projeto Robcmp, utilize os seguintes comandos:
-
-\begin{abntbox}
-# Mostra todos os comandos disponiveis 
-make -f Makefile.tflm help
-
-# Compila e gera o executavel na pasta build
-make -f Makefile.tflm FILE=syntax-spam
-
-# Remove os arquivos gerados desse programa
-make -f Makefile.tflm FILE=syntax-spam clean
-
-# Remove os arquivos objeto(.o) gerados por programas
-make -f Makefile.tflm clean-all
-
-# Executa o programa que foi gerado na pasta build
-./build/syntax-spam
-\end{abntbox}
+O ambiente foi configurado para gerar executáveis compatíveis com a arquitetura \texttt{x86\_64}, permitindo a validação apenas na máquina de desenvolvimento.
 
 \section{Resultados da Validação Funcional}
 Como o objetivo da validação funcional era garantir que as novas funcionalidades implementadas estivessem operando conforme o esperado, foram criados diversos arquivos \texttt{.rob} que utilizavam diferentes modelos de ML, abrangendo uma variedade de cenários e casos de uso.
@@ -174,15 +66,11 @@ Dentro do diretório de testes desejado, basta executar o comando \texttt{make} 
 
 Dois arquivos de exemplo foram colocados nos apêndices no final deste trabalho que realizam os testes unitários com o modelo de classificação de spam. O \hyperref[]{Código~\ref*{}} apresenta o arquivo \texttt{syntax-spam.rob}, que utiliza a nova sintaxe da RL, enquanto o \hyperref[lst:teste-bib-rob]{Código~\ref*{lst:teste-bib-rob}} apresenta o arquivo \texttt{lib-spam.rob}, que utiliza a biblioteca padrão.
 
-Esses testes verificam se o modelo de ML é carregado corretamente, se as entradas são processadas adequadamente e se as saídas correspondem ao esperado, entre outros aspectos. Ambos os arquivos foram compilados e executados com sucesso, confirmando o correto funcionamento das novas funcionalidades.
+Esses testes verificam se o modelo de ML é carregado corretamente, se as entradas são processadas adequadamente e se as saídas correspondem ao esperado, entre outros aspectos. Todos os testes unitários foram executados com sucesso, exibindo a mensagem \textit{PASS} ao final de cada execução, confirmando que as novas funcionalidades implementadas estão operando conforme o esperado.
 
 \section{Resultados da Validação da Eficiência e Análise Comparativa}
 
-No processo de validação da eficiência, os mesmos testes unitários foram utilizados para medir o desempenho dos três métodos de desenvolvimento de firmwares: utilizando a nova sintaxe da RL, utilizando a biblioteca padrão do Robcmp para TinyML e desenvolvendo diretamente em C++ com o TFLM. No processo de compilação foi uitlizada a flag \texttt{-Oz} para otimização do tamanho do binário final. Além disso, também foram utilziadas várias tags de otimização no processo de linkedição com o \textit{linker} Clang.
-
-Para calcular o tempo de execução foi utilizado a ferramenta de \textit{benchmark} de linha de comando Hyperfine. Diferente do utilitário padrão time, o Hyperfine automatiza a execução múltipla do binário para garantir relevância estatística, calculando a média e o desvio padrão dos tempos de execução. A ferramenta foi configurada para executar uma fase de aquecimento(\textit{warmup}) de 10 iterações antes da medição, visando mitigar a latência de I/O (leitura de disco) e estabilizar o uso de cache do processador. Em seguida foram realizadas 100 iterações de medição com o binário em questão para obter uma média confiável do tempo de execução.
-
-Para atingir resultador verídicos, os binários foram executados isoladamente, sem outros processos concorrentes na máquina de desenvolvimento. O tempo de medição utilizado foi a média do tempo real de execução (\textit{Time (mean)}) fornecido pelo Hyperfine.
+No processo de validação da eficiência, os mesmos testes unitários foram utilizados para medir o desempenho dos três métodos de desenvolvimento de \textit{firmwares}: utilizando a nova sintaxe da RL, utilizando a biblioteca padrão do Robcmp para TinyML e desenvolvendo diretamente em C++ com o TFLM.
 
 A \hyperref[notebook-tamanho]{Tabela~\ref*{notebook-tamanho}} apresenta o tamanho do binário final gerado para cada modelo TinyML testado, enquanto a \hyperref[comparativo]{Tabela~\ref{comparativo}} exibe o tempo de execução médio de cada modelo. Ambos os testes foram realizados na máquina de desenvolvimento. 
 
@@ -193,13 +81,18 @@ A \hyperref[notebook-tamanho]{Tabela~\ref*{notebook-tamanho}} apresenta o tamanh
     \begin{tabular}{cccc}
     \toprule
     \textbf{Modelo TinyML} & \textbf{Sintaxe} & \textbf{Biblioteca padrão} & \textbf{TFLM(C++)}  \\ \midrule
-    Classificador de Spam & - & 591K & 188K \\ 
-    Preditor de Seno quantizado & - & 512K & 88K \\ 
-    Preditor de Seno & - & 512K & 88K \\ 
-    \bottomrule
+    Preditor de Seno quantizado & - & 94K & 88K \\ 
+    Preditor de Seno & - & 94K & 88K \\
+    Classificador de Spam & - & 199K & 188K \\ 
+    Micro Speech & - & 149K & 133K \\
+    Person Detection & - & 439K & 434K \\
+    \bottomrule 
     
     \end{tabular}
 \end{table}
+
+
+
 
 \begin{table}[H]
 \centering 
@@ -208,17 +101,16 @@ A \hyperref[notebook-tamanho]{Tabela~\ref*{notebook-tamanho}} apresenta o tamanh
     \begin{tabular}{cccc}
     \toprule
     \textbf{Modelo TinyML} & \textbf{Sintaxe} & \textbf{Biblioteca padrão} & \textbf{TFLM(C++)}  \\ \midrule
-    Classificador de Spam & - & 2.301 & 1.112 \\ 
-    Preditor de Seno quantizado & - & 2.150 & 1.059 \\ 
-    Preditor de Seno & - & 2.125 & 1.035 \\ 
+    Preditor de Seno quantizado & - & 1.921 & 1.007 \\ 
+    Preditor de Seno & - & 1.916 & 0.985 \\
+    Classificador de Spam & - & 1.973 & 1.058 \\ 
+    Micro Speech & - & 10.914 & 9.851 \\
+    Person Detection & - & 150.674 & 149.260 \\
     \bottomrule
     
     \end{tabular}
 \end{table}
 
-
-
 \section{Considerações Finais}
 
 ipsen lorem dolor sit amet, consectetur adipiscing elit. Quisque euismod, nisi vel consectetur interdum, nisl nisi consectetur nisi, euismod consectetur nisi nisi euismod nisi. Quisque euismod, nisi vel consectetur interdum, nisl nisi consectetur nisi, euismod consectetur nisi nisi euismod nisi. Quisque euismod, nisi vel consectetur interdum, nisl nisi consectetur nisi, euismod consectetur nisi nisi euismod nisi. Quisque euismod, nisi vel consectetur interdum, nisl nisi consectetur nisi, euismod consectetur nisi nisi euismod nisi.
-
