@@ -14,4 +14,4 @@
 *.snm
 *.fdb_latexmk
 *.fls
-
+*.listing
