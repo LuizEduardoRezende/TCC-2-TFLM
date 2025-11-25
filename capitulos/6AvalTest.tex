@@ -10,33 +10,34 @@ Os novos recursos e funcionalidades implementados diretamente na linguagem RL fo
 
 O ambiente de desenvolvimento foi o Visual Studio Code (versão 1.106.1), com o auxílio de duas extensões principais: o PlatformIO (versão 6.1.18), para depurar e exportar os \textit{firmwares} para as placas, e o RobCmpSyntax (versão 1.0), que fornece o realce de sintaxe para arquivos .rob. Além disso, para a validação dos experimentos, foram utilizados \textit{scripts} de automação (Makefiles personalizados) que padronizaram a execução dos testes unitários, garantindo que as flags de otimização (como \texttt{-Oz}) e linkedição fossem aplicadas consistentemente em todas as amostras comparativas.
 
-A máquina de desenvolvimento utilizada foi um \textit{notebook} Lenovo IdeaPad 3 15ITL6, equipado com processador Intel® Core™ i7-1165G7, 16 GB de RAM e sistema operacional Ubuntu 24.04.1 LTS. Além da máquina de desenvolvimento, a execução e validação das aplicações ocorreram em uma placa com o microcontrolador STM32F407VET6, da família STM32, popularmente chamada de Black STM32F407VET6. Essa placa conta com um processador ARM Cortex-M4 rodando a 168 MHz, 192 KB de RAM e 512 KB de memória Flash.
+A máquina de desenvolvimento utilizada foi um \textit{notebook} Lenovo IdeaPad 3 15ITL6, equipado com processador Intel® Core™ i7-1165G7, 16 GB de RAM e sistema operacional Ubuntu 24.04.1 LTS.
+As validações funcionais e de eficiência foram realizadas nesta máquina, gerando binários compatíveis com a arquitetura \texttt{x86}.
+
+% Além da máquina de desenvolvimento, a execução e validação das aplicações ocorreram em uma placa com o microcontrolador STM32F407VET6, da família STM32, popularmente chamada de Black STM32F407VET6. Essa placa conta com um processador ARM Cortex-M4 rodando a 168 MHz, 192 KB de RAM e 512 KB de memória Flash.
 
 \subsection{Modelos de Machine Learning Adotados}
 Para garantir a abrangência dos testes, foram selecionados diferentes modelos de TinyML, variando em complexidade e tipo de dado de entrada (numérico, texto, áudio e imagem). Alguns foram selecionados do repositório do próprio TFLM no Github, enquanto que outros foram adquiridos na internet. Os modelos utilizados são:
 
 \begin{description}
-    \item[Preditor de Seno:] O modelo "Hello World" do TinyML. É um modelo simples que tem como objetivo prever valores de uma onda senoidal com base em valores de entrada $x$ no intervalo de $0$ a $2\pi$.
+    \item[Preditor de Seno:] O modelo ``Hello World'' do TinyML. É um modelo simples que tem como objetivo prever valores de uma onda senoidal com base em valores de entrada $x$ no intervalo de $0$ a $2\pi$.
     
     \item[Preditor de Seno Quantizado:] Uma variação do modelo anterior, porém submetido ao processo de quantização pós-treinamento. Seus pesos e ativações foram convertidos de ponto flutuante para inteiros (8 bits).
 
-    \item[Classificador de Spam:] Esse classificador de spam é um modelo de processamento de linguagem natural (NLP) que categoriza mensagens de texto como "spam" ou "não spam". Baixado do site Kaggle, é um modelo demonstrativo gerado pelo TensorFlow Lite Model Maker, treinado a partir de um arquivo de vocabulário contendo a lista de palavras e seus tokens equivalentes. Ele recebe como entrada um tensor de 20 inteiros (Int32) representando tokens de uma sentença codificada. Sua saída é um vetor de ponto flutuante (Float32) contendo duas probabilidades: a de ser spam e a de não ser.
+    \item[Classificador de Spam:] Esse classificador de spam é um modelo de Processamento de Linguagem Natural (NLP, do inglês \textit{Natural Language Processing}) que categoriza mensagens de texto como ``spam'' ou ``não spam''. Baixado do site Kaggle, é um modelo demonstrativo gerado pelo TensorFlow Lite Model Maker, treinado a partir de um arquivo de vocabulário contendo a lista de palavras e seus tokens equivalentes. Ele recebe como entrada um tensor de 20 inteiros (Int32) representando tokens de uma sentença codificada. Sua saída é um vetor de ponto flutuante (Float32) contendo duas probabilidades: a de ser spam e a de não ser.
     
-    \item[Micro Speech:] O Micro Speech é uma Rede Neural Convolucional (CNN) compacta ($<20$ kB) projetada para reconhecer as palavras-chave "yes" e "no". Ele opera em conjunto com um modelo pré-processador que converte amostras de áudio bruto ($16$ KHz) em espectrogramas compostos por 49 features. O classificador recebe esses dados como entrada e retorna as probabilidades para quatro categorias: silence, unknown, yes e no.
+    \item[Micro Speech:] O Micro Speech é CNN compacta ($<20$ kB) projetada para reconhecer as palavras-chave ``yes'' e ``no''. Ele opera em conjunto com um modelo pré-processador que converte amostras de áudio bruto ($16$ KHz) em espectrogramas compostos por 49 features. O classificador recebe esses dados como entrada e retorna as probabilidades para quatro categorias: silence, unknown, yes e no.
 
-    \item[Person Detection:] Este modelo de detecção de pessoas utiliza uma rede neural de aproximadamente 250 kB para reconhecer a presença humana. Ele recebe como entrada um tensor de inteiros de 8 bits (int8) contendo os dados brutos de uma imagem em escala de cinza. O modelo processa esse vetor e gera como saída pontuações (scores) que classificam a cena entre as categorias "pessoa" e "não pessoa".
+    \item[Person Detection:] Este é um modelo de detecção de pessoas que utiliza uma rede neural de aproximadamente 250 kB para reconhecer a presença humana. Ele recebe como entrada um tensor de inteiros de 8 bits (int8) contendo os dados brutos de uma imagem em escala de cinza. O modelo processa esse vetor e gera como saída pontuações (scores) que classificam a cena entre as categorias ``pessoa'' e ``não pessoa''.
 \end{description}
 
 
 \subsection{Procedimentos de Validação Funcional}
 A etapa de validação funcional teve como objetivo verificar se a solução proposta cumpria o que prometia, sem levar em consideração sua eficiência, aplicabilidade, facilidade ou qualquer outro fator que mede sua qualidade.
 
-Nesta etapa, as novas funcionalidades foram validadas utilizando testes unitários, que foram executados tanto na máquina de desenvolvimento quanto na placa com o MCU. Esses testes foram projetados para verificar se cada nova funcionalidade implementada no Robcmp estava operando conforme o esperado. Foram criados diversos arquivos \texttt{.rob} que utilizavam diferentes modelos de ML, abrangendo uma variedade de cenários e casos de uso. Os testes foram desenvolvidos utilizando tanto a linguagem RL com as novas palavras-chave quanto a biblioteca padrão.
+Nesta etapa, as novas funcionalidades foram validadas utilizando testes unitários, que foram executados na máquina de desenvolvimento. Esses testes foram projetados para verificar se cada nova funcionalidade implementada no Robcmp estava operando conforme o esperado. Foram criados diversos arquivos \texttt{.rob} que utilizavam diferentes modelos de ML, abrangendo uma variedade de cenários e casos de uso. Os testes foram desenvolvidos utilizando apenas a biblioteca padrão ai.tflm disponibilizada pelo Robcmp, uma vez que as adaptações no \textit{frontend} do compilador não estavam totalmente integradas para a realização dos testes finais.
 
 \subsection{Validação da eficiência e Análise Comparativa}
-Para validar a eficiência da integração do TFLM à RL, foi realizada uma análise comparativa entre três abordagens de desenvolvimento de \textit{firmwares}: os desenvolvidos com a nova sintaxe da RL, os que utilizaram a biblioteca padrão do Robcmp para TinyML e os desenvolvidos diretamente em C++ utilizando o ambiente do TFLM.
-
-Para garantir uma avaliação justa, ambos os testes foram conduzidos em um MCU idêntico e com o mesmo modelo de ML. Nesta avaliação, foram considerados critérios como a facilidade de desenvolvimento, a manutenibilidade do código, o tempo de execução e o tamanho final do executável.
+Para validar a eficiência da integração do TFLM à RL, foi realizada uma análise comparativa entre duas abordagens de desenvolvimento de \textit{firmwares}: os desenvolvidos com a biblioteca padrão do Robcmp para TinyML e os desenvolvidos diretamente em C++ utilizando o ambiente do TFLM. Nesta avaliação, foram considerados critérios como a facilidade de desenvolvimento, a manutenibilidade do código, o tempo de execução e o tamanho final do executável.
 
 Para calcular o tempo de execução foi utilizado a ferramenta de \textit{benchmark} de linha de comando Hyperfine. Diferente do utilitário padrão \textit{time}, o Hyperfine automatiza a execução múltipla do binário para garantir relevância estatística, calculando a média e o desvio padrão dos tempos de execução. A ferramenta foi configurada para executar uma fase de aquecimento(\textit{warmup}) de 10 iterações antes da medição, visando mitigar a latência de I/O (leitura de disco) e estabilizar o uso de cache do processador. Em seguida foram realizadas 100 iterações de medição com o binário em questão para obter uma média confiável do tempo de execução.
 
@@ -44,16 +45,16 @@ Para atingir resultados verídicos, os binários foram executados isoladamente, 
 
 \section{Configuração do Ambiente Experimental}\label{sec:ambiente-experimental}
 
-Para garantir facilitar o processo de compilação e execução dos testes, foi estabelecido um ambiente de desenvolvimento padronizado. Um guia detalhado com o passo a passo para a instalação das ferramentas, compilação do compilador modificado e configuração das dependências encontra-se disponível no \hyperref[apendice:guia-instalacao]{Apêndice~\ref*{apendice:guia-instalacao}}.
+Para facilitar o processo de compilação e execução dos testes, foi estabelecido um ambiente de desenvolvimento padronizado. Um guia detalhado com o passo a passo para a instalação das ferramentas, compilação do compilador modificado e configuração das dependências encontra-se disponível no \hyperref[apendice:guia-instalacao]{Apêndice~\ref*{apendice:guia-instalacao}}.
 
 A estrutura do projeto foi organizada de modo que os testes relacionados ao TFLM ficassem isolados no diretório \texttt{test/tflm-tests}. Neste diretório, foi alocado um \texttt{Makefile} personalizado, responsável por automatizar todo o processo de compilação, linkedição e execução dos testes.
 
 Este \texttt{Makefile} executa as seguintes etapas principais para cada um dos arquivos de teste \texttt{.rob} presentes no diretório:
 \begin{enumerate}
-    \item Compila o código do \textit{wrapper} C do TFLM para gerar a biblioteca estática somente uma vez (caso seja necessario);
+    \item Compila o código do \textit{wrapper} C do TFLM para gerar a biblioteca estática somente uma vez (caso ela não exista ou alguma configuração do \textit{wrapper} tenha sido modificada);
     \item Invoca o compilador Robcmp para traduzir os arquivos fonte \texttt{.rob} em código objeto (\textit{.o});
     \item Realiza a linkedição do código objeto gerado com as bibliotecas estáticas do TFLM (\texttt{libtensorflow-microlite.a}) e do \textit{wrapper} de compatibilidade desenvolvido.
-    \item Executa todos os binários gerados, exibindo \textit{PASS} ou \textit{FAILED}.
+    \item Executa todos os binários gerados, exibindo \textit{PASS} caso o retorno seja 0, ou \textit{FAILED} caso seja diferente de 0.
 \end{enumerate}
 
 Para garantir a otimização do tamanho do binário final e a compatibilidade com o TFLM em ambiente embarcado, foram utilizadas diversas \textit{flags} de compilação e linkedição. As principais opções adotadas e suas respectivas funções estão descritas a seguir:
@@ -74,21 +75,25 @@ Para garantir a otimização do tamanho do binário final e a compatibilidade co
 O ambiente foi configurado para gerar executáveis compatíveis com a arquitetura \texttt{x86\_64}, permitindo a validação apenas na máquina de desenvolvimento.
 
 \section{Resultados da Validação Funcional}
-Como o objetivo da validação funcional era garantir que as novas funcionalidades implementadas estivessem operando conforme o esperado, foram criados diversos arquivos \texttt{.rob} que utilizavam diferentes modelos de ML, abrangendo uma variedade de cenários e casos de uso.
+Todos os testes unitários relacionados ao TFLM estão localizados na pasta \texttt{\seqsplit{test/tflm-tests}}. Essa separação foi necessária pois o processo de linkedição dos programas que utilizam o TFLM é diferente dos programas convencionais, exigindo a inclusão da biblioteca estática do TFLM e do \textit{wrapper} C.
 
-A maioria dos testes unitários do Robcmp estão presentes na pasta \texttt{test/general} e são executados automaticamente através do Makefile e de um script \texttt{run-tests.sh}. No caso dos testes unitários relacionados ao TFLM, estes estão localizados na pasta \texttt{test/tflm-tests}. Essa separação foi necessária pois o processo de linkedição dos programas que utilizam o TFLM é diferente dos programas convencionais, exigindo a inclusão da biblioteca estática do TFLM e do \textit{wrapper} C.
+Dentro do diretório de testes desejado, basta executar o comando \texttt{make} para que todos os testes sejam compilados e executados automaticamente. Como convenção, os arquivos de teste que utilizam a nova sintaxe possuem o prefixo \texttt{syntax-}, enquanto os que utilizam a biblioteca padrão possuem o prefixo \texttt{lib-}.
 
-Dentro do diretório de testes desejado, basta executar o comando \texttt{make} para que todos os testes sejam compilados e executados automaticamente. Foram desenvolvidos testes unitários tanto utilizando a nova sintaxe da RL quanto utilizando a biblioteca padrão do Robcmp para TinyML. Como convenção, os arquivos de teste que utilizam a nova sintaxe possuem o prefixo \texttt{syntax-}, enquanto os que utilizam a biblioteca padrão possuem o prefixo \texttt{lib-}.
+Dois arquivos de exemplo foram colocados nos apêndices no final deste trabalho que realizam os testes unitários com o modelo de classificação de spam.
 
-Dois arquivos de exemplo foram colocados nos apêndices no final deste trabalho que realizam os testes unitários com o modelo de classificação de spam. O \hyperref[]{Código~\ref*{}} apresenta o arquivo \texttt{syntax-spam.rob}, que utiliza a nova sintaxe da RL, enquanto o \hyperref[lst:teste-bib-rob]{Código~\ref*{lst:teste-bib-rob}} apresenta o arquivo \texttt{lib-spam.rob}, que utiliza a biblioteca padrão.
+Um arquivo de exemplo foi colocado no apêndice no final deste trabalho que realiza os testes unitários com o modelo de classificação de spam. O \hyperref[lst:teste-bib-rob]{Código~\ref*{lst:teste-bib-rob}} apresenta o arquivo \texttt{lib-spam.rob}, que utiliza a biblioteca padrão, todos os outros testes unitários com a biblioteca padão seguem a memsa lógica.
 
-Esses testes verificam se o modelo de ML é carregado corretamente, se as entradas são processadas adequadamente e se as saídas correspondem ao esperado, entre outros aspectos. Todos os testes unitários foram executados com sucesso, exibindo a mensagem \textit{PASS} ao final de cada execução, confirmando que as novas funcionalidades implementadas estão operando conforme o esperado.
+Esses testes verificam se o modelo de ML é carregado corretamente, se as entradas são processadas adequadamente e se as saídas correspondem ao esperado, entre outros aspectos. Todos os testes unitários com a biblioteca padrão foram executados com sucesso, exibindo a mensagem \textit{PASS} ao final de cada execução, confirmando que as novas funcionalidades implementadas estão operando conforme o esperado.
 
 \section{Resultados da Validação da Eficiência e Análise Comparativa}
+A \hyperref[notebook-tamanho]{Tabela~\ref*{notebook-tamanho}} apresenta o tamanho do binário final gerado para cada teste unitário, enquanto a \hyperref[comparativo]{Tabela~\ref{comparativo}} exibe o tempo de execução médio obtido em cada um. Ambos os testes foram realizados na máquina de desenvolvimento. 
 
-No processo de validação da eficiência, os mesmos testes unitários foram utilizados para medir o desempenho dos três métodos de desenvolvimento de \textit{firmwares}: utilizando a nova sintaxe da RL, utilizando a biblioteca padrão do Robcmp para TinyML e desenvolvendo diretamente em C++ com o TFLM.
+Com base nos resultados apresentados, observa-se que a utilização da biblioteca padrão em RL introduz um \textit{overhead} natural devido à camada de abstração e ao \textit{wrapper} de compatibilidade.
 
-A \hyperref[notebook-tamanho]{Tabela~\ref*{notebook-tamanho}} apresenta o tamanho do binário final gerado para cada modelo TinyML testado, enquanto a \hyperref[comparativo]{Tabela~\ref{comparativo}} exibe o tempo de execução médio de cada modelo. Ambos os testes foram realizados na máquina de desenvolvimento. 
+Em relação ao tamanho do binário, o aumento absoluto variou entre 5 KB e 16 KB. No modelo \textit{Person Detection}, o maior testado, a diferença de 5 KB representou um aumento de apenas 1,15\% ($439$ KB contra $434$ KB), demonstrando que mesmo para aplicações reais de maior porte, o impacto no armazenamento é negligenciável.
+
+Quanto ao tempo de execução, nota-se um comportamento constante em todos os modelos testados, a diferença absoluta variou minimamente entre 0,914 ms e 1,414 ms, o que pode ser considerado relevante em aplicações de tempo real ou com restrições rigorosas de latência. No entanto, é importante destacar que, para modelos mais complexos como o \textit{Person Detection}, essa diferença representa apenas cerca de 0,94\% do tempo total de execução (150,674 ms contra 149,260 ms), indicando que o impacto relativo diminui conforme a complexidade do modelo aumenta.
+
 
 \begin{table}[H]
 \centering 
@@ -96,19 +101,16 @@ A \hyperref[notebook-tamanho]{Tabela~\ref*{notebook-tamanho}} apresenta o tamanh
 \label{notebook-tamanho}
     \begin{tabular}{cccc}
     \toprule
-    \textbf{Modelo TinyML} & \textbf{Sintaxe} & \textbf{Biblioteca padrão} & \textbf{TFLM(C++)}  \\ \midrule
-    Preditor de Seno quantizado & - & 94K & 88K \\ 
-    Preditor de Seno & - & 94K & 88K \\
-    Classificador de Spam & - & 199K & 188K \\ 
-    Micro Speech & - & 149K & 133K \\
-    Person Detection & - & 439K & 434K \\
+    \textbf{Modelo TinyML} & \textbf{Biblioteca padrão} & \textbf{TFLM(C++)}  \\ \midrule
+    Preditor de Seno quantizado & 94K & 88K \\ 
+    Preditor de Seno & 94K & 88K \\
+    Classificador de Spam & 199K & 188K \\ 
+    Micro Speech & 149K & 133K \\
+    Person Detection & 439K & 434K \\
     \bottomrule 
     
     \end{tabular}
 \end{table}
-
-
-
 
 \begin{table}[H]
 \centering 
@@ -116,16 +118,24 @@ A \hyperref[notebook-tamanho]{Tabela~\ref*{notebook-tamanho}} apresenta o tamanh
 \label{comparativo}
     \begin{tabular}{cccc}
     \toprule
-    \textbf{Modelo TinyML} & \textbf{Sintaxe} & \textbf{Biblioteca padrão} & \textbf{TFLM(C++)}  \\ \midrule
-    Preditor de Seno quantizado & - & 1.921 & 1.007 \\ 
-    Preditor de Seno & - & 1.916 & 0.985 \\
-    Classificador de Spam & - & 1.973 & 1.058 \\ 
-    Micro Speech & - & 10.914 & 9.851 \\
-    Person Detection & - & 150.674 & 149.260 \\
+    \textbf{Modelo TinyML} & \textbf{Biblioteca padrão} & \textbf{TFLM(C++)}  \\ \midrule
+    Preditor de Seno quantizado & 1.921 & 1.007 \\ 
+    Preditor de Seno & 1.916 & 0.985 \\
+    Classificador de Spam & 1.973 & 1.058 \\ 
+    Micro Speech & 10.914 & 9.851 \\
+    Person Detection - & 150.674 & 149.260 \\
     \bottomrule
     
     \end{tabular}
 \end{table}
+
+No quesito facilidade de desenvolvimento e manutenibilidade do código, a utilização da biblioteca padrão em RL demonstrou ser significativamente mais vantajosa. Uma comparação pode ser feita entre o \hyperref[lst:teste-bib-rob]{Código~\ref*{lst:teste-bib-rob}} (\texttt{.rob} com biblioteca padrão) e \hyperref[lst:teste-cpp]{Código~\ref*{lst:teste-cpp}} (C++ com TFLM) apresentados nos apdêndices do trabalho.
+
+No desenvolvimento em C++, o programador precisa ter conhecimento detalhado da arquitetura do \textit{framework} para que consiga manipular corretamente os símbolos e funções do TFLM. Para que seja desenvolvida uma aplicação funcional é necessário: incluir múltiplos arquivos de cabeçalho específicos, instanciar manualmente o registrador de operadores e registrar operador por operador, gerenciar explicitamente o ciclo de vida do intérprete e a alocação de tensores, realizar verificações de versão de schema (TFLITE\_SCHEMA\_VERSION), acessar ponteiros brutos e iterar sobre eles para manipular os dados de entrada e saída, entre outras tarefas complexas.
+
+Em contrapartida, o desenvolvimento utilizando a biblioteca padrão em RL é significativamente mais simples e direto. Com uma única linha de importação da biblioteca \texttt{ai.tflm}, o programador tem acesso a todas as funcionalidades necessárias para criar uma aplicação TinyML. O registro de operadores(\textit{kernels}) é feita de forma declarativa através de um array de IDs, eliminando a necessidade de chamadas de função repetitivas. Além disso, na inicialização do modelo, o processo de configuração do intérprete e alocação de tensores é abstraído, permitindo que o desenvolvedor foque apenas na lógica da aplicação. A manipulação dos dados de entrada e saída é realizada de maneira intuitiva, utilizando arrays nativos da RL, sem a necessidade de lidar com ponteiros brutos ou estruturas complexas.
+
+Apesar do código em RL possuir mais caracteres por conta da ausência de um sistema de arquvios para incluir os dados do modelo e dados de entrada diretamente(como é feito em C++), o número de linhas de código é significativamente menor, o que facilita a leitura e manutenção do código.
 
 \section{Considerações Finais}
 
