@@ -1,13 +1,23 @@
 \chapter{Conclusões e Trabalhos Futuros}\label{cap:conclusao}
 
+Este trabalho realizou a extensão da RL através da integração da biblioteca TFLM. Essa extensão ocorreu de duas formas distintas: uma concluída e a outra não terminada, porém planejada. A primeira foi a criação da biblioteca padrão \texttt{ai.tflm} para o Robcmp; já a segunda foi a proposta e o planejamento da adaptação do \textit{frontend} do compilador para suportar novas palavras-chave e tipos de dados, permitindo a escrita de programas em RL que utilizem o TFLM de forma nativa.
 
+O desenvolvimento da biblioteca \texttt{ai.tflm} foi bem-sucedido. Ela utiliza a camada de interoperabilidade explicada na \hyperref[sec:arq-camada-compatibilidade]{Seção~\ref*{sec:arq-camada-compatibilidade}} e o \textit{wrapper} desenvolvido na \hyperref[sec:wrapper]{Seção~\ref*{sec:wrapper}} para expor as funcionalidades do TFLM ao Robcmp. A validação ocorreu na máquina de desenvolvimento por meio de testes unitários, garantindo funcionalidade e confiabilidade para diferentes modelos de TinyML. Esses modelos processam diversos tipos de entrada, como números simples, texto tokenizado e a representação em arrays de bytes de imagens e espectrogramas de áudio. Além disso, a eficiência foi avaliada em termos de tamanho do binário e tempo de execução, demonstrando a adequação da biblioteca para dispositivos com recursos limitados.
 
+A adaptação do \textit{frontend} do Robcmp para suportar o TFLM nativamente não foi concluída. No entanto, grande parte já foi implementada e detalhada durante o texto. A implementação dessa funcionalidade permitiria aos desenvolvedores escrever programas em RL que utilizem o TFLM de forma mais intuitiva, sem a necessidade de recorrer à biblioteca \texttt{ai.tflm}. Essa abordagem nativa facilitaria a integração de modelos TinyML em aplicações RL, promovendo uma experiência de desenvolvimento mais fluida e eficiente.
 
+Pode-se concluir que o desenvolvimento do \textit{wrapper} e da biblioteca \texttt{ai.tflm} representa uma base sólida para o desenvolvimento de aplicações TinyML em RL. Isso permite que aplicações de ML sejam desenvolvidas para dispositivos embarcados com recursos limitados, aproveitando as capacidades do TFLM e também da RL que inclui desenvolvimento de firmware com baixo acoplamento, alta coesão, elevada manutenibilidade e abstração de hardware.
 
+Como possíveis melhorias a serem desenvolvidas para o compilador Robcmp e sua linguagem RL, tanto no contexto de TinyML quanto em outras áreas, destacam-se:
 
+\begin{itemize}
+    \item Finalização da implementação do \textit{frontend} do Robcmp para suportar o TFLM nativamente, conforme planejado.
+    \item Validação da biblioteca \texttt{ai.tflm} e do \textit{frontend} adaptado em dispositivos embarcados reais, avaliando seu desempenho e eficiência em ambientes com recursos limitados.
+    \item Exploração de outras bibliotecas de ML para integração com o Robcmp, ampliando as opções disponíveis para desenvolvedores.
+    \item Criação de novas estratégias no \textit{wrapper} desenvolvido com o intuito de: modernizar a otimização de tamanho de binário e contornar a perda de precisão durante a quantização e conversão de tipos.
+\end{itemize}
 
-
-
+Com base nas contribuições deste trabalho, espera-se que o Robcmp e a linguagem RL possam continuar a evoluir, incorporando novas funcionalidades e melhorias que atendam às necessidades dos desenvolvedores de sistemas embarcados e aplicações de TinyML. A integração do TFLM é um passo importante nessa direção, e futuras pesquisas podem explorar ainda mais as possibilidades em áreas como TinyML, \textit{Edge AI} e sistemas IoT inteligentes.
 
 % \section{Conclusões}
 % As conclusões devem estabelecer uma descrição sucinta e sintética daquilo que o autor concluiu ao desenvolver sua pesquisa. Deve haver um cuidado para que a mesma não seja óbvia e também que não seja impossível de identificar no texto. Conclusões sobre um ou outro tipo de tecnologia usada, conclusões sobre caminhos que foram tomados na condução da pesquisa são importantes. E, cabe ressaltar que este texto é do autor, portanto não cabe nesta seção a inserção de referências bibliográficas.

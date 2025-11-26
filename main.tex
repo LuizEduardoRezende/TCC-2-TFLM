@@ -178,11 +178,14 @@ alsoletter={_\%}
 \begin{siglas}
 
 \item[AF] Autômato Finito
+\item[AIfES] Artificial Intelligence for Embedded Systems
+\item[API] Application Programming Interface
 \item[ARM] Advanced RISC Machine
 \item[AST] Árvore Sintática Abstrata
 \item[AVR] Alf and Vegard’s RISC processor
 \item[CFG] Context-Free Grammar
 \item[CPU] Central Processing Unit
+\item[DSP] Digital Signal Processor
 \item[IA] Inteligência Artificial
 \item[IoT] Internet of Things
 \item[IR] Intermediate Representation
@@ -192,6 +195,7 @@ alsoletter={_\%}
 \item[RE] Regular Expression
 \item[RL] Robotics Language
 \item[TFLM] TensorFlow Lite Micro
+\item[UFJ] Universidade Federal de Jataí 
 
 \end{siglas}
 % ---
@@ -657,7 +661,7 @@ git checkout tflm-front-end
 git submodule update --init --recursive
 \end{abntbox}
 
-Talvez seja necessário atualizar(\textit{refresh}) o seu explorador de arquivos para vizualiar os novos arquivos criados, após a inicialização e atualização dos submódulos.
+Talvez seja necessário atualizar(\textit{refresh}) o seu explorador de arquivos para visualizar os novos arquivos criados, após a inicialização e atualização dos submódulos.
 
 \section{Processo de Compilação (\textit{Build})}
 O processo de compilação é dividido em duas etapas, conforme a arquitetura descrita na \hyperref[sec:arq-camada-compatibilidade]{Seção~\ref{sec:arq-camada-compatibilidade}}. Primeiro, compila-se a biblioteca estática do TFLM; em seguida, compila-se o Robcmp.
@@ -677,7 +681,7 @@ make -f tensorflow/lite/micro/tools/make/Makefile TARGET=cortex_m_generic TARGET
 make -f tensorflow/lite/micro/tools/make/Makefile microlite
 \end{abntbox}
 
-Ao final deste processo, a biblioteca estática com nome padronizado deverá estar presente no diretório \texttt{third-party/\allowbreak tflite-micro/\allowbreak gen/\allowbreak (nome-da-arquitetura)/\allowbreak lib/\allowbreak libtensorflow-microlite.a}. Talvez seja necessário atualizar(\textit{refresh}) o seu explorador de arquivos para vizualiar os novos arquivos criados.
+Ao final deste processo, a biblioteca estática com nome padronizado deverá estar presente no diretório \texttt{third-party/\allowbreak tflite-micro/\allowbreak gen/\allowbreak (nome-da-arquitetura)/\allowbreak lib/\allowbreak libtensorflow-microlite.a}. Talvez seja necessário atualizar(\textit{refresh}) o seu explorador de arquivos para visualizar os novos arquivos criados.
 
 Atenção, caso tenha feito a compilação de mais de uma biblioteca estática do TFLM, escolha apenas uma arquitetura para trabalhar por vez. Para que o build e a configuração do ambiente de desenvolvimento ocorram corretamente é necessário que exista apenas uma arquitetura dentro de \texttt{third-party/tflite-micro/gen}. Caso deseje trabalhar com multiplas arquiteturas, é recomendado que se crie cópias do repositório do Robcmp para cada arquitetura desejada.
 

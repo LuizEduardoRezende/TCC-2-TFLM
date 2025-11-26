@@ -79,8 +79,6 @@ Todos os testes unitários relacionados ao TFLM estão localizados na pasta \tex
 
 Dentro do diretório de testes desejado, basta executar o comando \texttt{make} para que todos os testes sejam compilados e executados automaticamente. Como convenção, os arquivos de teste que utilizam a nova sintaxe possuem o prefixo \texttt{syntax-}, enquanto os que utilizam a biblioteca padrão possuem o prefixo \texttt{lib-}.
 
-Dois arquivos de exemplo foram colocados nos apêndices no final deste trabalho que realizam os testes unitários com o modelo de classificação de spam.
-
 Um arquivo de exemplo foi colocado no apêndice no final deste trabalho que realiza os testes unitários com o modelo de classificação de spam. O \hyperref[lst:teste-bib-rob]{Código~\ref*{lst:teste-bib-rob}} apresenta o arquivo \texttt{lib-spam.rob}, que utiliza a biblioteca padrão, todos os outros testes unitários com a biblioteca padão seguem a memsa lógica.
 
 Esses testes verificam se o modelo de ML é carregado corretamente, se as entradas são processadas adequadamente e se as saídas correspondem ao esperado, entre outros aspectos. Todos os testes unitários com a biblioteca padrão foram executados com sucesso, exibindo a mensagem \textit{PASS} ao final de cada execução, confirmando que as novas funcionalidades implementadas estão operando conforme o esperado.
@@ -129,7 +127,7 @@ Quanto ao tempo de execução, nota-se um comportamento constante em todos os mo
     \end{tabular}
 \end{table}
 
-No quesito facilidade de desenvolvimento e manutenibilidade do código, a utilização da biblioteca padrão em RL demonstrou ser significativamente mais vantajosa. Uma comparação pode ser feita entre o \hyperref[lst:teste-bib-rob]{Código~\ref*{lst:teste-bib-rob}} (\texttt{.rob} com biblioteca padrão) e \hyperref[lst:teste-cpp]{Código~\ref*{lst:teste-cpp}} (C++ com TFLM) apresentados nos apdêndices do trabalho.
+No quesito facilidade de desenvolvimento e manutenibilidade do código, a utilização da biblioteca padrão em RL demonstrou ser significativamente mais vantajosa. Uma comparação pode ser feita entre o \hyperref[lst:teste-bib-rob]{Código~\ref*{lst:teste-bib-rob}} (\texttt{.rob} com biblioteca padrão) e \hyperref[lst:teste-cpp]{Código~\ref*{lst:teste-cpp}} (C++ com TFLM) apresentados nos apêndices do trabalho.
 
 No desenvolvimento em C++, o programador precisa ter conhecimento detalhado da arquitetura do \textit{framework} para que consiga manipular corretamente os símbolos e funções do TFLM. Para que seja desenvolvida uma aplicação funcional é necessário: incluir múltiplos arquivos de cabeçalho específicos, instanciar manualmente o registrador de operadores e registrar operador por operador, gerenciar explicitamente o ciclo de vida do intérprete e a alocação de tensores, realizar verificações de versão de schema (TFLITE\_SCHEMA\_VERSION), acessar ponteiros brutos e iterar sobre eles para manipular os dados de entrada e saída, entre outras tarefas complexas.
 
@@ -138,5 +136,8 @@ Em contrapartida, o desenvolvimento utilizando a biblioteca padrão em RL é sig
 Apesar do código em RL possuir mais caracteres por conta da ausência de um sistema de arquvios para incluir os dados do modelo e dados de entrada diretamente(como é feito em C++), o número de linhas de código é significativamente menor, o que facilita a leitura e manutenção do código.
 
 \section{Considerações Finais}
+A integração do TFLM à linguagem RL, por meio da biblioteca padrão desenvolvida, foi validada com sucesso na máquina de desenvolvimento através de testes funcionais e uma análise comparativa de eficiência. Os resultados indicam que, a solução proposta se mostra funcional e eficaz, proporcionando uma alternativa viável para o desenvolvimento de aplicações TinyML em RL.
 
-ipsen lorem dolor sit amet, consectetur adipiscing elit. Quisque euismod, nisi vel consectetur interdum, nisl nisi consectetur nisi, euismod consectetur nisi nisi euismod nisi. Quisque euismod, nisi vel consectetur interdum, nisl nisi consectetur nisi, euismod consectetur nisi nisi euismod nisi. Quisque euismod, nisi vel consectetur interdum, nisl nisi consectetur nisi, euismod consectetur nisi nisi euismod nisi. Quisque euismod, nisi vel consectetur interdum, nisl nisi consectetur nisi, euismod consectetur nisi nisi euismod nisi.
+Apesar do aumento no tamanho do binário e no tempo de execução, os impactos foram considerados aceitáveis, especialmente quando comparados aos benefícios em termos de facilidade de desenvolvimento e manutenibilidade do código.
+
+O plano inicial era realizar os testes tanto na máquina de desenvolvimento quanto em uma placa embarcada com o microcontrolador STM32F407VET6. No entanto, devido a limitações de tempo, os testes em ambiente embarcado não foram concluídos. Recomenda-se que futuros trabalhos explorem essa etapa, avaliando o desempenho e a eficiência da solução em um ambiente real de aplicação TinyML.

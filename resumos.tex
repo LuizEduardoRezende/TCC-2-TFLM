@@ -6,20 +6,19 @@
 \setlength{\absparsep}{18pt} % ajusta o espaçamento dos parágrafos do resumo
 \begin{resumo}
 
-Resumo na língua vernácula, elaborado em folha separada, deve indicar, concisamente, os pontos relevantes do trabalho: objeto de estudo, problema, tema objetivos, justificativas,  metodologia, resultados esperados ou obtidos, o valor científico do trabalho e sua originalidade, contendo, no máximo 400 palavras e no mínimo 200. Deve ser composto de uma sequência de frases concisas e não deve ser elaborado na forma de tópicos. Deve ser seguido das palavras-chave ou descritores, precedido de dois espaços simples, tendo no mínimo de 3 e no máximo de 5 palavras, isto é, inserir palavras que mais representam o conteúdo do trabalho, ressaltando que as mesmas devem vir separadas por ponto. O resumo deve ser em texto corrido e sem parágrafo, digitado em espaço simples. 
+O Tiny Machine Learning (TinyML) viabiliza a execução de modelos de aprendizado de máquina em dispositivos de baixo consumo energético, contudo, sua implementação em microcontroladores apresenta desafios significativos devido à complexidade das ferramentas de software e à necessidade de conhecimentos avançados em C++ e compilação cruzada. Este trabalho tem como objetivo democratizar o acesso à inteligência artificial embarcada integrando o framework TensorFlow Lite Micro (TFLM) à Robotics Language (RL), uma linguagem de programação de propósito específico desenvolvida na Universidade Federal de Jataí com foco na abstração de hardware e simplicidade. A metodologia adotada consistiu na implementação de um wrapper em C para garantir a interoperabilidade entre a RL e a API do TFLM, no desenvolvimento de uma biblioteca padrão (ai.tflm) e na adaptação experimental do frontend do compilador Robcmp para suporte nativo a novas sintaxes. A validação funcional foi realizada por meio de testes unitários com diversos modelos, incluindo preditores numéricos e classificadores de texto e áudio. Adicionalmente, conduziu-se uma análise comparativa de eficiência entre a solução proposta e implementações nativas em C++. Os resultados demonstraram que a integração é funcional e reduz drasticamente a complexidade do código para o desenvolvedor final, eliminando a necessidade de gerenciamento manual de tensores e operadores. Embora tenha sido observado um leve aumento no tamanho do binário e no tempo de execução devido à camada de abstração, o impacto foi considerado negligenciável frente aos ganhos em manutenibilidade e facilidade de uso. Conclui-se que a extensão da RL oferece uma alternativa viável, eficiente e mais acessível para o desenvolvimento de aplicações de TinyML em sistemas embarcados.
 
- \textbf{Palavras-chaves}: \textit{PalavraChave1;Palavra-Chave2; Palavra-Chave3.} 
-
+ \textbf{Palavras-chave}: \textit{TinyML; Sistemas Embarcados; Robotics Language; TensorFlow Lite Micro; Inteligência Artificial.} 
 
 \end{resumo}
 
 % resumo em inglês
 \begin{resumo}[Abstract]
- \begin{otherlanguage*}{english}
- Abstract (Resumo na língua estrangeira),contém as orientações do resumo em língua estrangeira, digitado em folha separada. Por ser elaborado em idioma de comunicação internacional (inglês – Abstract). Deve, também, ser seguido das palavras-chave (inglês - Keywords). Os critérios de formatação do Abstract seguem os mesmos do Resumo na língua vernácula.  
+\begin{otherlanguage*}{english}
+Tiny Machine Learning (TinyML) enables the execution of machine learning models on low-power devices; however, its implementation on microcontrollers presents significant challenges due to the complexity of software tools and the need for advanced knowledge in C++ and cross-compilation. This work aims to democratize access to embedded artificial intelligence by integrating the TensorFlow Lite Micro (TFLM) framework into Robotics Language (RL), a domain-specific programming language developed at the Federal University of Jataí focused on hardware abstraction and simplicity. The methodology involved implementing a C wrapper to ensure interoperability between RL and the TFLM API, developing a standard library (ai.tflm), and experimentally adapting the Robcmp compiler frontend for native syntax support. Functional validation was performed through unit tests with various models, including numerical predictors and text and audio classifiers. Additionally, a comparative efficiency analysis was conducted between the proposed solution and native C++ implementations. The results showed that the integration is functional and drastically reduces code complexity for the final developer, eliminating the need for manual management of tensors and operators. Although a slight increase in binary size and execution time was observed due to the abstraction layer, the impact was considered negligible compared to the gains in maintainability and usability. It is concluded that the RL extension offers a viable, efficient, and more accessible alternative for developing TinyML applications in embedded systems. 
    
-   \textbf{Key-words}: 
-   \textit{Keyword1; Keyword2; Keyword3}.
- \end{otherlanguage*}
+\textbf{Key-words}: \textit{TinyML; Embedded Systems; Robotics Language; TensorFlow Lite Micro; Artificial Intelligence}.
+
+\end{otherlanguage*}
 \end{resumo}
 
