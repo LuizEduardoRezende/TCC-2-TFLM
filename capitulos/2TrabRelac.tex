@@ -1,6 +1,6 @@
 \chapter{Trabalhos relacionados}\label{cap:relacionados}
 
-Neste capítulo, são apresentadas publicações relacionadas a este trabalho, abordando decisões de design de ferramentas para TinyML e \textit{Edge AI} no contexto de MCUs. A busca dos trabalhos foi realizada por meio de uma revisão narrativa de literatura (RNL), utilizando como ponto inicial o conjunto de trabalhos já defendidos dentro do projeto Robcmp \cite{Ryan, Gabriel, Majestic}, seguido pela busca de trabalhos correlatos no PlatformIO Registry, uma plataforma que reúne e facilita o acesso a bibliotecas, \textit{frameworks} e ferramentas para desenvolvimento embarcado \cite{PlatformIORegistry}.
+Neste capítulo, são apresentadas publicações relacionadas a este trabalho, abordando decisões de design de ferramentas para TinyML e \textit{Edge AI} no contexto de MCUs. A busca dos trabalhos foi realizada por meio de uma revisão narrativa de literatura (RNL), utilizando como ponto inicial o conjunto de trabalhos já defendidos dentro do projeto Robcmp \cite{Ryan, Gabriel, Majestic}, seguido pela busca de trabalhos correlatos no Google Scholar. Foram utilizados termos como ``TinyML frameworks'', ``Machine Learning on Microcontrollers'', ``Embedded Machine Learning'' e ``Edge AI frameworks''.
 
 % \section{Critérios de busca}
 
@@ -22,7 +22,7 @@ Verifica se a ferramenta permite tanto o treinamento quanto a inferência direta
 
 
 \section{Trabalhos analisados}
-Foram analisados três trabalhos que abordam ferramentas para implementação de modelos de ML em MCUs, cada um com diferentes abordagens e características. Dentre eles, os dois primeiros foram escolhidos por serem ferramentas famosas e desenvolvidas por empresas grandes no setor de tecnologia, além do fato do primeiro ser o \textit{framework} utilizado como base para este trabalho. O terceiro foi selecionado por se tratar de uma ferramenta recém-proposta (publicada em 2024) desenvolvida por um grupo de pesquisadores, e não por uma grande empresa como a Google ou a STMicroelectronics, o que adiciona uma perspectiva acadêmica distinta ao desenvolvimento de ferramentas de ML para MCUs, além de ter sido publicada no IEEE.
+Foram analisados três trabalhos que abordam ferramentas para implementação de modelos de ML em MCUs, cada um com diferentes abordagens e características. Dentre eles, o primeiro foi selecionado por ser a principal base do trabalho proposto e o segundo por ser uma ferramenta amplamente utilizada no desenvolvimento embarcado com MCUs STM32. Por fim, o terceiro trabalho foi selecionado por se tratar de uma ferramenta recém-proposta (publicada no IEEE em 2024) e desenvolvida por um grupo de pesquisadores, ao invés de uma grande empresa como o Google ou a STMicroelectronics. Isso adiciona uma perspectiva acadêmica distinta ao desenvolvimento de ferramentas de ML para MCUs.
 
 \subsection{TensorFlow Lite Micro: Embedded Machine Learning for TinyML Systems}
 O trabalho de \citeonline{MLSYS2021_6c44dc73} apresenta as principais decisões por trás do TFLM, o \textit{framework} de inferência de ML da Google escolhido para este projeto. Seu grande diferencial é a abordagem baseada em um interpretador, que oferece flexibilidade e portabilidade para lidar com a fragmentação do ecossistema de \textit{hardware} embarcado.
