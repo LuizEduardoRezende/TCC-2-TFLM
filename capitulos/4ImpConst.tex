@@ -117,7 +117,7 @@ Esse tipo de otimização é crucial em sistemas embarcados, pois permite reduzi
 
 É importante ressaltar que a função recebe alguns parâmetros adicionais além dos já mencionados, como \texttt{tensor\_arena\_size}, \texttt{num\_kernels} e um parâmetro sem nome. Esses parâmetros podem ou não ser utilizados, mas devem constar na declaração da função por questões de compatibilidade com o \textit{backend} do LLVM. As demais funções do \textit{wrapper} também podem conter parâmetros extras pelo mesmo motivo.
 
-A necessidade desses parâmetros surge quando o Robcmp utiliza a biblioteca padrão do diretório \texttt{lib/ai/tflm.rob}, que contém as declarações das funções do wrapper conforme mostrado na \hyperref[lst:get-tensor-value]{Seção~\ref*{sec:bib-padrao}}. Essas declarações precisam estar alinhadas com as definições reais das funções no \textit{wrapper}. No arquivo \texttt{.rob}, para cada argumento que seja um vetor, é adicionado um argumento extra do tipo inteiro que representa o tamanho desse vetor. Isso é uma característica do compilador Robcmp para tratar vetores em chamadas de função. Portanto, para manter a consistência entre declarações e definições, esses parâmetros adicionais são incluídos nas definições das funções no \textit{wrapper}.
+A necessidade desses parâmetros surge quando o Robcmp utiliza a biblioteca padrão do diretório \texttt{lib/ai/tflm.rob}, que contém as declarações das funções do \textit{wrapper} conforme mostrado na \hyperref[lst:get-tensor-value]{Seção~\ref*{sec:bib-padrao}}. Essas declarações precisam estar alinhadas com as definições reais das funções no \textit{wrapper}. No arquivo \texttt{.rob}, para cada argumento que seja um vetor, é adicionado um argumento extra do tipo inteiro que representa o tamanho desse vetor. Isso é uma característica do compilador Robcmp para tratar vetores em chamadas de função. Portanto, para manter a consistência entre declarações e definições, esses parâmetros adicionais são incluídos nas definições das funções no \textit{wrapper}.
 
 No caso de uso do \textit{wrapper} sem a biblioteca padrão \texttt{tflm.rob}, ou seja, quando as chamadas são geradas diretamente pelo \textit{frontend} do compilador, esses parâmetros adicionais não são necessários, pois as chamadas ocorrem diretamente no código C++ ou no LLVM-IR gerado pela análise semântica do compilador.
 
@@ -269,7 +269,7 @@ int16 main() {
 	const arena_size = 8000;
 	const kernels = {9};
 	dados = {1.57};
-    output = {0.0};
+	output = {0.0};
 
 	// 2. Carrega o modelo
 	model meu_modelo("meu_modelo.tflite", arena_size, kernels);
@@ -286,7 +286,7 @@ int16 main() {
 }
 \end{lstlisting}
 
-Para a implementação dessa nova sintaxe, foram necessárias modificações no \textit{frontend} do compilador Robcmp, especificamente nas fases de análise léxica, sintática e semântica. Todo código fonte do \textit{frontend} está localizado na pasta \texttt{src/}, portanto, todos arquivos mencionados nesta seção podem ser encontrados nesse diretório do repositório do Robcmp.
+Para a implementação dessa nova sintaxe, foram necessárias modificações no \textit{frontend} do compilador Robcmp, especificamente nas fases de análise léxica, sintática e semântica. Todo código fonte do \textit{frontend} está localizado na pasta \texttt{src/}, portanto, todos os arquivos mencionados nesta seção podem ser encontrados nesse diretório do repositório do Robcmp.
 
 \lstdefinelanguage{Flex}{
   morekeywords={return},

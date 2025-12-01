@@ -79,12 +79,12 @@ Todos os testes unitários relacionados ao TFLM estão localizados na pasta \tex
 
 Dentro do diretório de testes desejado, basta executar o comando \texttt{make} para que todos os testes sejam compilados e executados automaticamente. Como convenção, os arquivos de teste que utilizam a nova sintaxe possuem o prefixo \texttt{syntax-}, enquanto os que utilizam a biblioteca padrão possuem o prefixo \texttt{lib-}.
 
-Um arquivo de exemplo foi colocado no apêndice no final deste trabalho que realiza os testes unitários com o modelo de classificação de spam. O \hyperref[lst:teste-bib-rob]{Código~\ref*{lst:teste-bib-rob}} apresenta o arquivo \texttt{lib-spam.rob}, que utiliza a biblioteca padrão, todos os outros testes unitários com a biblioteca padão seguem a memsa lógica.
+Um arquivo de exemplo foi colocado no apêndice no final deste trabalho que realiza os testes unitários com o modelo de classificação de spam. O \hyperref[lst:teste-bib-rob]{Código~\ref*{lst:teste-bib-rob}} apresenta o arquivo \texttt{lib-spam.rob}, que utiliza a biblioteca padrão, todos os outros testes unitários com a biblioteca padrão seguem a mesma lógica.
 
 Esses testes verificam se o modelo de ML é carregado corretamente, se as entradas são processadas adequadamente e se as saídas correspondem ao esperado, entre outros aspectos. Todos os testes unitários com a biblioteca padrão foram executados com sucesso, exibindo a mensagem \textit{PASS} ao final de cada execução, confirmando que as novas funcionalidades implementadas estão operando conforme o esperado.
 
 \section{Resultados da Validação da Eficiência e Análise Comparativa}
-A \hyperref[notebook-tamanho]{Tabela~\ref*{notebook-tamanho}} apresenta o tamanho do binário final gerado para cada teste unitário, enquanto a \hyperref[comparativo]{Tabela~\ref{comparativo}} exibe o tempo de execução médio obtido em cada um. Ambos os testes foram realizados na máquina de desenvolvimento. 
+A \hyperref[notebook-tamanho]{Tabela~\ref*{notebook-tamanho}} apresenta o tamanho do binário final gerado para cada teste unitário, enquanto a \hyperref[notebook-tempo]{Tabela~\ref*{notebook-tempo}} exibe o tempo de execução médio obtido em cada um. Ambos os testes foram realizados na máquina de desenvolvimento. 
 
 Com base nos resultados apresentados, observa-se que a utilização da biblioteca padrão em RL introduz um \textit{overhead} natural devido à camada de abstração e ao \textit{wrapper} de compatibilidade.
 
@@ -113,7 +113,7 @@ Quanto ao tempo de execução, nota-se um comportamento constante em todos os mo
 \begin{table}[H]
 \centering 
 \caption{Tempo de execução (ms) na máquina de desenvolvimento}
-\label{comparativo}
+\label{notebook-tempo}
     \begin{tabular}{cccc}
     \toprule
     \textbf{Modelo TinyML} & \textbf{Biblioteca padrão} & \textbf{TFLM(C++)}  \\ \midrule
@@ -133,7 +133,7 @@ No desenvolvimento em C++, o programador precisa ter conhecimento detalhado da a
 
 Em contrapartida, o desenvolvimento utilizando a biblioteca padrão em RL é significativamente mais simples e direto. Com uma única linha de importação da biblioteca \texttt{ai.tflm}, o programador tem acesso a todas as funcionalidades necessárias para criar uma aplicação TinyML. O registro de operadores(\textit{kernels}) é feita de forma declarativa através de um array de IDs, eliminando a necessidade de chamadas de função repetitivas. Além disso, na inicialização do modelo, o processo de configuração do intérprete e alocação de tensores é abstraído, permitindo que o desenvolvedor foque apenas na lógica da aplicação. A manipulação dos dados de entrada e saída é realizada de maneira intuitiva, utilizando arrays nativos da RL, sem a necessidade de lidar com ponteiros brutos ou estruturas complexas.
 
-Apesar do código em RL possuir mais caracteres por conta da ausência de um sistema de arquvios para incluir os dados do modelo e dados de entrada diretamente(como é feito em C++), o número de linhas de código é significativamente menor, o que facilita a leitura e manutenção do código.
+Apesar do código em RL possuir mais caracteres por conta da ausência de um sistema de arquivos para incluir os dados do modelo e dados de entrada diretamente(como é feito em C++), o número de linhas de código é significativamente menor, o que facilita a leitura e manutenção do código.
 
 \section{Considerações Finais}
 A integração do TFLM à linguagem RL, por meio da biblioteca padrão desenvolvida, foi validada com sucesso na máquina de desenvolvimento através de testes funcionais e uma análise comparativa de eficiência. Os resultados indicam que, a solução proposta se mostra funcional e eficaz, proporcionando uma alternativa viável para o desenvolvimento de aplicações TinyML em RL.

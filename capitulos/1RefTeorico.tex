@@ -39,19 +39,19 @@ A \hyperref[fig:front-end]{Figura~\ref*{fig:front-end}} ilustra as principais et
 \end{figure}
 
 \subsection{Analisador Léxico}
-A primeira etapa do \textit{frontend} consiste em um analisador Léxico, ou \textit{Scanner} em inglês. Ele inicia a análise do programa fonte lendo o texto de entrada (caractere por caractere) e agrupando caracteres individuais em \textit{tokens}, como identificadores, números inteiros, palavras reservadas e delimitadores \cite[p. 16]{fischer2010crafting}. No analisador léxico, Autômatos Finitos (AFs) atuam como núcleo do processo de reconhecimento de \textit{tokens}. Eles simulam um fluxo de transições entre estados, guiados pelos caracteres de entrada, até determinar se uma sequência é válida (aceita) ou inválida (rejeitada) \cite[p. 23]{cooper2013engineering}.
+A primeira etapa do \textit{frontend} consiste em um analisador léxico, ou \textit{Scanner} em inglês. Ele inicia a análise do programa fonte lendo o texto de entrada (caractere por caractere) e agrupando caracteres individuais em \textit{tokens}, como identificadores, números inteiros, palavras reservadas e delimitadores \cite[p. 16]{fischer2010crafting}. No analisador léxico, Autômatos Finitos (AFs) atuam como núcleo do processo de reconhecimento de \textit{tokens}. Eles simulam um fluxo de transições entre estados, guiados pelos caracteres de entrada, até determinar se uma sequência é válida (aceita) ou inválida (rejeitada) \cite[p. 23]{cooper2013engineering}.
 
 O conjunto de palavras aceitas por um autômato finito, F, forma uma linguagem, indicada por L(F). Essa linguagem é definida de maneira precisa pelo seu diagrama de transição, que descreve todas as possíveis sequências de estados e símbolos aceitos pelo AF. Para qualquer AF, também podemos descrever sua linguagem usando uma notação chamada expressão regular (RE, do inglês \textit{Regular Expression}). A linguagem descrita por uma RE é chamada de linguagem regular \cite[p. 26]{cooper2013engineering}. Tanto um AF quanto uma RE podem ser usados em um programa gerador de \textit{scanner}, um programa que produz efetivamente um analisador léxico funcional. Geradores de analisadores léxicos são ferramentas valiosas para a construção de compiladores \cite[p. 16]{fischer2010crafting}.
 
 \subsection{Analisador Sintático}
 A principal tarefa do analisador sintático (ou \textit{parser}, em inglês) é verificar se o programa de entrada constitui uma sentença sintaticamente válida na linguagem-fonte. Para essa finalidade, essa etapa utiliza gramáticas livres de contexto, uma vez que REs não são mais suficientes para descrever a sintaxe complexa presente na maioria das linguagens de programação \cite[p. 69, 70]{cooper2013engineering}.
 
-Apesar de uma RE, como a apresentada na \hyperref[fig:RE]{Figura~\ref*{fig:RE}}, poder reconhecer a expressão a + b × c corretamente, ela não pode especificar a ordem de precedência entre os operadores. Conforme as regras algébricas convencionais, as operações de multiplicação e divisão possuem precedência sobre adição e subtração. Essa ordem de avaliação pode também ser alterada utilizando parênteses como mecanismo de agrupamento. Porém, a simples inclusão de parênteses em REs não resolve adequadamente o problema de precedência, pois é impossível definir uma RE que reconheça todas as possíveis combinações de parênteses balanceados \cite[p. 71]{cooper2013engineering}. Em outras palavras, a linguagem reconhecida por uma RE não é suficiente para o reconhecimento sintático do compilador.
+Apesar de uma RE, como a apresentada na \hyperref[fig:RE]{Figura~\ref*{fig:RE}}, poder reconhecer a expressão $a + b \times c$ corretamente, ela não pode especificar a ordem de precedência entre os operadores. Conforme as regras algébricas convencionais, as operações de multiplicação e divisão possuem precedência sobre adição e subtração. Essa ordem de avaliação pode também ser alterada utilizando parênteses como mecanismo de agrupamento. Porém, a simples inclusão de parênteses em REs não resolve adequadamente o problema de precedência, pois é impossível definir uma RE que reconheça todas as possíveis combinações de parênteses balanceados \cite[p. 71]{cooper2013engineering}. Em outras palavras, a linguagem reconhecida por uma RE não é suficiente para o reconhecimento sintático do compilador.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.8\linewidth]{Imagens/RE.png} % Ajuste o valor entre 0-1
-\caption{RE utilizada para identificar identificadores compostos e operações aritméticas simples entre identificadores, formadas por letras minúsculas, dígitos e operadores (+, -, x, ÷). Adaptado de \citeonline{cooper2013engineering}.}
+\caption{RE utilizada para identificar identificadores compostos e operações aritméticas simples entre identificadores, formadas por letras minúsculas, dígitos e operadores (+, -, $\times$, $\div$). Adaptado de \citeonline{cooper2013engineering}.}
 \label{fig:RE}
 \end{figure}
 
@@ -85,7 +85,7 @@ factor : '(' expr ')'
 
 Além disso, uma CFG pode validar construções com parênteses balanceados; A regra Expr -> ( Expr ) na \hyperref[fig:CFG-regra]{Figura~\ref{fig:CFG-regra}} demonstra essa capacidade, permitindo que expressões sejam aninhadas recursivamente dentro de parênteses. O analisador sintático utiliza essa regra para garantir que, para cada parêntese de abertura, exista um correspondente de fechamento.
 
-Por fim, a última capacidade de uma CFG que será abordada é sua representação de hierarquias sintáticas através de árvores de derivação. Na \hyperref[fig:CFG-arvore]{Figura~\ref{fig:CFG-arvore}}, a árvore ilustra a estrutura (a + b) × c. Isso ocorre porque a regra Expr -> Expr Op nome força uma avaliação da associatividade à esquerda. A árvore mostra a operação de adição a + b sendo formada em um nível mais baixo e, em seguida, o resultado dessa subárvore é usado como operando para a multiplicação por c, que está no topo da árvore.
+Por fim, a última capacidade de uma CFG que será abordada é sua representação de hierarquias sintáticas através de árvores de derivação. Na \hyperref[fig:CFG-arvore]{Figura~\ref{fig:CFG-arvore}}, a árvore ilustra a estrutura $(a + b) \times c$. Isso ocorre porque a regra Expr -> Expr Op nome força uma avaliação da associatividade à esquerda. A árvore mostra a operação de adição a + b sendo formada em um nível mais baixo e, em seguida, o resultado dessa subárvore é usado como operando para a multiplicação por c, que está no topo da árvore.
 
 \begin{figure}[H]
 \centering
@@ -295,6 +295,6 @@ Para o desenvolvimento de programas e \textit{firmwares} na Robotics Language é
 % \label{modeloimg}
 % \end{figure}
 
- 
+
 
 
