@@ -1,14 +1,32 @@
 \chapter{Conclusões e Trabalhos Futuros}\label{cap:conclusao}
 
+\section{Conclusões}
 Este trabalho realizou a extensão da RL através da integração da biblioteca TFLM. Essa extensão ocorreu de duas formas distintas: uma concluída e a outra parcialmente implementada. A primeira foi a criação da biblioteca padrão \texttt{ai.tflm} para o Robcmp; já a segunda foi a proposta e o planejamento da adaptação do \textit{frontend} do compilador para suportar novas palavras-chave e tipos de dados, permitindo a escrita de programas em RL que utilizem o TFLM de forma nativa.
 
-O desenvolvimento da biblioteca \texttt{ai.tflm} foi bem-sucedido. Ela utiliza a camada de interoperabilidade explicada na \hyperref[sec:arq-camada-compatibilidade]{Seção~\ref*{sec:arq-camada-compatibilidade}} e o \textit{wrapper} desenvolvido na \hyperref[sec:wrapper]{Seção~\ref*{sec:wrapper}} para expor as funcionalidades do TFLM ao Robcmp. A validação ocorreu na máquina de desenvolvimento por meio de testes unitários, garantindo funcionalidade e confiabilidade para diferentes modelos de TinyML. Esses modelos processam diversos tipos de entrada, como números simples, texto tokenizado e a representação em arrays de bytes de imagens e espectrogramas de áudio. Além disso, a eficiência foi avaliada em termos de tamanho do binário e tempo de execução, demonstrando a adequação da biblioteca para dispositivos com recursos limitados.
+O desenvolvimento da biblioteca \texttt{ai.tflm} foi bem-sucedido. Ela utiliza a camada de interoperabilidade explicada na \hyperref[sec:arq-camada-compatibilidade]{Seção~\ref*{sec:arq-camada-compatibilidade}} e o \textit{wrapper} desenvolvido na \hyperref[sec:wrapper]{Seção~\ref*{sec:wrapper}} para expor as funcionalidades do TFLM ao Robcmp. A validação ocorreu na máquina de desenvolvimento por meio de testes unitários, garantindo funcionalidade e confiabilidade para diferentes modelos de TinyML. Esses modelos processam diversos tipos de entrada, como números simples, texto tokenizado e a representação em arrays de bytes de imagens e espectrogramas de áudio. 
+
+A eficiência da solução também foi avaliada em termos de tamanho do binário e tempo de execução na \hyperref[sec:resultados-analise-comparativa]{Seção~\ref*{sec:resultados-analise-comparativa}}. Apesar do aumento no tamanho do binário e no tempo de execução, os impactos foram considerados aceitáveis, especialmente quando comparados aos benefícios em termos de facilidade de desenvolvimento e manutenibilidade do código.
 
 A adaptação do \textit{frontend} do Robcmp para suportar o TFLM nativamente não foi concluída. No entanto, grande parte já foi implementada e detalhada durante o texto. A implementação dessa funcionalidade permitiria aos desenvolvedores escrever programas em RL que utilizem o TFLM de forma mais intuitiva, sem a necessidade de recorrer à biblioteca \texttt{ai.tflm}. Essa abordagem nativa facilitaria a integração de modelos TinyML em aplicações RL, promovendo uma experiência de desenvolvimento mais fluida e eficiente.
 
 Pode-se concluir que o desenvolvimento do \textit{wrapper} e da biblioteca \texttt{ai.tflm} representa uma base sólida para o desenvolvimento de aplicações TinyML em RL. Isso permite que aplicações de ML sejam desenvolvidas para dispositivos embarcados com recursos limitados, aproveitando as capacidades do TFLM e também da RL que inclui desenvolvimento de \textit{firmware} com baixo acoplamento, alta coesão, elevada manutenibilidade e abstração de \textit{hardware}.
 
-Como possíveis melhorias a serem desenvolvidas para o compilador Robcmp e sua linguagem RL, tanto no contexto de TinyML quanto em outras áreas, destacam-se:
+O trabalho tem como objetivo inicial o suporte à arquitetura ARM Cortex-M, utilizada por diversas famílias de microcontroladores (como a STM32). No entanto, o desenvolvedor pode escolher a arquitetura desejada para gerar o \textit{firmware}, desde que o Robcmp e o TFLM ofereçam suporte à plataforma escolhida. Para isso, é necessário compilar tanto o wrapper quanto a biblioteca do TFLM para a arquitetura específica, garantindo a portabilidade do sistema.
+
+\section{Limitações}
+Apesar do sucesso na implementação, algumas partes apresentam certas limitações que, devido ao tempo disponível e ao grande escopo do projeto, não puderam ser totalmente aprimoradas:
+
+\begin{itemize}
+    \item \textbf{Ausência de Testes em Ambiente Embarcado:} O plano inicial incluía a realização de testes em uma placa embarcada (STM32F407VET6). Contudo, devido a limitações de tempo, os testes em ambiente real não foram concluídos. Recomenda-se que futuros trabalhos explorem essa etapa.
+    \item \textbf{Perda de Precisão na Quantização:} Uma das possíveis abordagens para a entrada e saída de dados exige que o wrapper realize a conversão e quantização de variáveis ou vetores de ponto flutuante. Embora simplifique o uso, esse processo pode introduzir perda de precisão ao utilizar métodos de arredondamento, o que é um fator de atenção em aplicações sensíveis a erros.
+    \item \textbf{Restrição da Sintaxe de Acesso a Tensores:} Os tokens que tratam o acesso aos tensores de entrada e saída exigem uma sintaxe específica, impedindo que campos com os nomes \texttt{input} e \texttt{output} sejam declarados em tipos definidos pelo usuário. O ideal seria tratar o acesso aos tensores como membros normais de um tipo.
+    \item \textbf{Baixa Modularidade do \texttt{ModelNode}:} A classe \texttt{ModelNode} concentra uma grande quantidade de responsabilidades e utiliza um esquema de roteamento interno para decidir qual operação realizar, resultando em um código menos modular e mais acoplado.
+    \item \textbf{Implementação Não Concluída do Frontend Nativo:} A adaptação do frontend do Robcmp para suportar o TFLM nativamente não foi concluída, o que exigiu o uso da biblioteca padrão. Sua finalização é essencial para uma experiência de desenvolvimento mais fluida e intuitiva.
+    
+\end{itemize}
+
+\section{Trabalhos Futuros}
+Com base nas contribuições e nas limitações deste trabalho, as seguintes melhorias e caminhos de pesquisa são sugeridos para o compilador Robcmp e sua linguagem RL, tanto no contexto de TinyML quanto em outras áreas:
 
 \begin{itemize}
     \item Finalização da implementação do \textit{frontend} do Robcmp para suportar o TFLM nativamente, conforme planejado.

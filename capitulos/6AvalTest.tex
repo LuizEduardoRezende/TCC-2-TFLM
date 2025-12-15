@@ -1,47 +1,6 @@
 \chapter{Avaliação e Testes}\label{cap:analise}
 
-Este capítulo abordará tudo relacionado ao processo de avaliação e testes da solução proposta. Inicialmente, serão descritos os procedimentos metodológicos adotados, incluindo também quais foram os recursos utilizados na execução dos testes, como \textit{hardware}, \textit{software}, modelos de ML e outras ferramentas relevantes. Em seguida, será detalhada a configuração do ambiente experimental, fornecendo informações sobre como replicar o ambiente utilizado para os testes. Por fim, serão apresentados os resultados obtidos durante os testes, acompanhados de uma análise crítica e uma discussão final sobre os resultados.
-
-\section{Metodologia}
-Esta seção descreve a metodologia adotada para avaliação e testes da solução, apresentando o ambiente de desenvolvimento (\textit{software}, \textit{hardware} e modelos), bem como os procedimentos de validação funcional e a análise comparativa de eficiência.
-
-\subsection{\textit{Software} e \textit{Hardware} Utilizados}
-Os novos recursos e funcionalidades implementados diretamente na linguagem RL foram desenvolvidos com o auxílio das ferramentas Flex (versão 2.6.4) e Bison (versão 3.8.2), responsáveis por gerar os analisadores léxico e sintático do Robcmp. Além disso, a análise semântica foi escrita em C++ conforme a estrutura do compilador. Por outro lado, a nova biblioteca padrão foi desenvolvida com a própria linguagem RL, criando um arquivo \texttt{.rob} que continha todas as declarações das funções do \textit{wrapper} C do TFLM.
-
-O ambiente de desenvolvimento foi o Visual Studio Code (versão 1.106.1), com o auxílio de duas extensões principais: o PlatformIO (versão 6.1.18), para depurar e exportar os \textit{firmwares} para as placas, e o RobCmpSyntax (versão 1.0), que fornece o realce de sintaxe para arquivos .rob. Além disso, para a validação dos experimentos, foram utilizados \textit{scripts} de automação (Makefiles personalizados) que padronizaram a execução dos testes unitários, garantindo que as flags de otimização (como \texttt{-Oz}) e linkedição fossem aplicadas consistentemente em todas as amostras comparativas.
-
-A máquina de desenvolvimento utilizada foi um \textit{notebook} Lenovo IdeaPad 3 15ITL6, equipado com processador Intel® Core™ i7-1165G7, 16 GB de RAM e sistema operacional Ubuntu 24.04.1 LTS.
-As validações funcionais e de eficiência foram realizadas nesta máquina, gerando binários compatíveis com a arquitetura \texttt{x86}.
-
-% Além da máquina de desenvolvimento, a execução e validação das aplicações ocorreram em uma placa com o microcontrolador STM32F407VET6, da família STM32, popularmente chamada de Black STM32F407VET6. Essa placa conta com um processador ARM Cortex-M4 rodando a 168 MHz, 192 KB de RAM e 512 KB de memória Flash.
-
-\subsection{Modelos de Machine Learning Adotados}
-Para garantir a abrangência dos testes, foram selecionados diferentes modelos de TinyML, variando em complexidade e tipo de dado de entrada (numérico, texto, áudio e imagem). Alguns foram selecionados do repositório do próprio TFLM no Github, enquanto que outros foram adquiridos na internet. Os modelos utilizados são:
-
-\begin{description}
-    \item[Preditor de Seno:] O modelo ``Hello World'' do TinyML. É um modelo simples que tem como objetivo prever valores de uma onda senoidal com base em valores de entrada $x$ no intervalo de $0$ a $2\pi$.
-    
-    \item[Preditor de Seno Quantizado:] Uma variação do modelo anterior, porém submetido ao processo de quantização pós-treinamento. Seus pesos e ativações foram convertidos de ponto flutuante para inteiros (8 bits).
-
-    \item[Classificador de Spam:] Esse classificador de spam é um modelo de Processamento de Linguagem Natural (NLP, do inglês \textit{Natural Language Processing}) que categoriza mensagens de texto como ``spam'' ou ``não spam''. Baixado do site Kaggle, é um modelo demonstrativo gerado pelo TensorFlow Lite Model Maker, treinado a partir de um arquivo de vocabulário contendo a lista de palavras e seus tokens equivalentes. Ele recebe como entrada um tensor de 20 inteiros (Int32) representando tokens de uma sentença codificada. Sua saída é um vetor de ponto flutuante (Float32) contendo duas probabilidades: a de ser spam e a de não ser.
-    
-    \item[Micro Speech:] O Micro Speech é CNN compacta ($<20$ kB) projetada para reconhecer as palavras-chave ``yes'' e ``no''. Ele opera em conjunto com um modelo pré-processador que converte amostras de áudio bruto ($16$ KHz) em espectrogramas compostos por 49 features. O classificador recebe esses dados como entrada e retorna as probabilidades para quatro categorias: silence, unknown, yes e no.
-
-    \item[Person Detection:] Este é um modelo de detecção de pessoas que utiliza uma rede neural de aproximadamente 250 kB para reconhecer a presença humana. Ele recebe como entrada um tensor de inteiros de 8 bits (int8) contendo os dados brutos de uma imagem em escala de cinza. O modelo processa esse vetor e gera como saída pontuações (scores) que classificam a cena entre as categorias ``pessoa'' e ``não pessoa''.
-\end{description}
-
-
-\subsection{Procedimentos de Validação Funcional}
-A etapa de validação funcional teve como objetivo verificar se a solução proposta cumpria o que prometia, sem levar em consideração sua eficiência, aplicabilidade, facilidade ou qualquer outro fator que mede sua qualidade.
-
-Nesta etapa, as novas funcionalidades foram validadas utilizando testes unitários, que foram executados na máquina de desenvolvimento. Esses testes foram projetados para verificar se cada nova funcionalidade implementada no Robcmp estava operando conforme o esperado. Foram criados diversos arquivos \texttt{.rob} que utilizavam diferentes modelos de ML, abrangendo uma variedade de cenários e casos de uso. Os testes foram desenvolvidos utilizando apenas a biblioteca padrão ai.tflm disponibilizada pelo Robcmp, uma vez que as adaptações no \textit{frontend} do compilador não estavam totalmente integradas para a realização dos testes finais.
-
-\subsection{Validação da eficiência e Análise Comparativa}
-Para validar a eficiência da integração do TFLM à RL, foi realizada uma análise comparativa entre duas abordagens de desenvolvimento de \textit{firmwares}: os desenvolvidos com a biblioteca padrão do Robcmp para TinyML e os desenvolvidos diretamente em C++ utilizando o ambiente do TFLM. Nesta avaliação, foram considerados critérios como a facilidade de desenvolvimento, a manutenibilidade do código, o tempo de execução e o tamanho final do executável.
-
-Para calcular o tempo de execução foi utilizada a ferramenta de \textit{benchmark} de linha de comando Hyperfine. Diferente do utilitário padrão \textit{time}, o Hyperfine automatiza a execução múltipla do binário para garantir relevância estatística, calculando a média e o desvio padrão dos tempos de execução. A ferramenta foi configurada para executar uma fase de aquecimento(\textit{warmup}) de 10 iterações antes da medição, visando mitigar a latência de I/O (leitura de disco) e estabilizar o uso de cache do processador. Em seguida foram realizadas 100 iterações de medição com o binário em questão para obter uma média confiável do tempo de execução.
-
-Para atingir resultados verídicos, os binários foram executados isoladamente, sem outros processos concorrentes na máquina de desenvolvimento. O tempo de medição utilizado foi a média do tempo real de execução (\textit{Time (mean)}) fornecido pelo Hyperfine.
+Este capítulo apresenta a execução prática da validação da solução proposta. Com base na metodologia e nas definições de ambiente (\textit{hardware}, \textit{software} e modelos de ML) detalhadas no \hyperref[cap:metodologia]{Capítulo~\ref*{cap:metodologia}}, esta seção foca em três aspectos centrais: a configuração do ambiente experimental, a comprovação da validação funcional e a análise comparativa de eficiência entre a solução em RL e a implementação nativa em C++. Por fim, serão apresentados os resultados obtidos durante os testes, acompanhados de uma análise crítica.
 
 \section{Configuração do Ambiente Experimental}\label{sec:ambiente-experimental}
 
@@ -83,14 +42,11 @@ Um arquivo de exemplo foi colocado no apêndice no final deste trabalho que real
 
 Esses testes verificam se o modelo de ML é carregado corretamente, se as entradas são processadas adequadamente e se as saídas correspondem ao esperado, entre outros aspectos. Todos os testes unitários com a biblioteca padrão foram executados com sucesso, exibindo a mensagem \textit{PASS} ao final de cada execução, confirmando que as novas funcionalidades implementadas estão operando conforme o esperado.
 
-\section{Resultados da Validação da Eficiência e Análise Comparativa}
-A \hyperref[notebook-tamanho]{Tabela~\ref*{notebook-tamanho}} apresenta o tamanho do binário final gerado para cada teste unitário, enquanto a \hyperref[notebook-tempo]{Tabela~\ref*{notebook-tempo}} exibe o tempo de execução médio obtido em cada um. Ambos os testes foram realizados na máquina de desenvolvimento. 
+\section{Resultados da Validação da Eficiência e Análise Comparativa}\label{sec:resultados-analise-comparativa}
+A validação da eficiência foi realizada comparando-se o tamanho final do binário (\textit{Flash}) e o tempo médio de execução entre a solução proposta (RL com biblioteca padrão) e a implementação nativa em C++ (TFLM puro). Todos os testes foram realizados na máquina de desenvolvimento.
 
-Com base nos resultados apresentados, observa-se que a utilização da biblioteca padrão em RL introduz um \textit{overhead} natural devido à camada de abstração e ao \textit{wrapper} de compatibilidade.
-
-Em relação ao tamanho do binário, o aumento absoluto variou entre 5 KB e 16 KB. No modelo \textit{Person Detection}, o maior testado, a diferença de 5 KB representou um aumento de apenas 1,15\% ($439$ KB contra $434$ KB), demonstrando que mesmo para aplicações reais de maior porte, o impacto no armazenamento é negligenciável.
-
-Quanto ao tempo de execução, nota-se um comportamento constante em todos os modelos testados, a diferença absoluta variou minimamente entre 0,914 ms e 1,414 ms, o que pode ser considerado relevante em aplicações de tempo real ou com restrições rigorosas de latência. No entanto, é importante destacar que, para modelos mais complexos como o \textit{Person Detection}, essa diferença representa apenas cerca de 0,94\% do tempo total de execução (150,674 ms contra 149,260 ms), indicando que o impacto relativo diminui conforme a complexidade do modelo aumenta.
+\subsection{Análise do Tamanho do Binário}
+A \hyperref[notebook-tamanho]{Tabela~\ref*{notebook-tamanho}} apresenta os valores exatos em \textit{bytes} para cada modelo, enquanto a \hyperref[graf:tamanho-binario]{Figura~\ref*{graf:tamanho-binario}} fornece um comparativo visual do impacto no armazenamento.
 
 
 \begin{table}[H]
@@ -110,6 +66,44 @@ Quanto ao tempo de execução, nota-se um comportamento constante em todos os mo
     \end{tabular}
 \end{table}
 
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            ybar,
+            symbolic x coords={Seno, Spam, Speech, Person},
+            xtick=data,
+            nodes near coords,
+            nodes near coords style={font=\footnotesize},
+            ylabel={Tamanho (KB)},
+            xlabel={Modelos},
+            legend style={at={(0.5,-0.15)}, anchor=north, legend columns=-1},
+            width=0.85\textwidth,
+            height=7cm,
+            ymin=0,
+            bar width=25pt,
+            enlarge x limits=0.2,
+            grid=major,
+            grid style={dashed, gray!30}
+        ]
+            \addplot[fill=blue!60] coordinates {(Seno,94) (Spam,199) (Speech,149) (Person,439)};
+            \addplot[fill=gray!60] coordinates {(Seno,88) (Spam,188) (Speech,133) (Person,434)};
+            \legend{Robotics Language, C++ Nativo}
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Comparativo do tamanho do binário final (\textit{Flash}) entre as implementações.}
+    \label{graf:tamanho-binario}
+\end{figure}
+
+
+Com base nos resultados apresentados, observa-se que a utilização da biblioteca padrão em RL introduz um \textit{overhead} natural devido à camada de abstração e ao \textit{wrapper} de compatibilidade. O aumento absoluto variou entre 5 KB e 16 KB.
+
+No entanto, conforme ilustrado na \hyperref[graf:tamanho-binario]{Figura~\ref*{graf:tamanho-binario}}, esse impacto se torna menos significativo em aplicações maiores. No modelo \textit{Person Detection}, o maior testado, a diferença de 5 KB representou um aumento de apenas 1,15\% ($439$ KB contra $434$ KB), demonstrando que, para aplicações reais de maior porte, o impacto no armazenamento é aceitável.
+
+\subsection{Análise do Tempo de Execução}
+A \hyperref[notebook-tempo]{Tabela~\ref*{notebook-tempo}} exibe o tempo de execução médio obtido em cada teste.
+
 \begin{table}[H]
 \centering 
 \caption{Tempo de execução (ms) na máquina de desenvolvimento}
@@ -127,7 +121,75 @@ Quanto ao tempo de execução, nota-se um comportamento constante em todos os mo
     \end{tabular}
 \end{table}
 
-No quesito facilidade de desenvolvimento e manutenibilidade do código, a utilização da biblioteca padrão em RL demonstrou ser significativamente mais vantajosa. Uma comparação pode ser feita entre o \hyperref[lst:teste-bib-rob]{Código~\ref*{lst:teste-bib-rob}} (\texttt{.rob} com biblioteca padrão) e \hyperref[lst:teste-cpp]{Código~\ref*{lst:teste-cpp}} (C++ com TFLM) apresentados nos apêndices do trabalho.
+Nota-se um comportamento constante em todos os modelos testados: a diferença absoluta variou minimamente entre 0,914 ms e 1,414 ms. Isso indica um custo fixo de processamento introduzido pelo \textit{wrapper}. Para facilitar a visualização desse impacto em diferentes escalas, os resultados foram divididos em dois gráficos.
+
+A \hyperref[graf:tempo-leves]{Figura~\ref*{graf:tempo-leves}} apresenta os modelos de baixa carga computacional. Nesses casos, o \textit{overhead} fixo é visualmente perceptível e representa uma parcela significativa do tempo total, chegando a dobrar o tempo em inferências muito rápidas (< 2 ms).
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            ybar,
+            symbolic x coords={Seno, Spam},
+            xtick=data,
+            nodes near coords,
+            nodes near coords style={font=\footnotesize},
+            ylabel={Tempo (ms)},
+            xlabel={Modelos},
+            ymin=0, ymax=3.0, 
+            legend style={at={(0.5,-0.15)}, anchor=north, legend columns=-1},
+            width=0.6\textwidth, % Menor largura pois tem poucas barras
+            height=7cm,
+            bar width=1.5cm, 
+            enlarge x limits=0.5,
+            grid=major,
+            grid style={dashed, gray!30}
+        ]
+            \addplot[fill=red!60] coordinates {(Seno,1.921) (Spam,1.973)};
+            \addplot[fill=gray!60] coordinates {(Seno,1.007) (Spam,1.058)};
+            \legend{Robotics Language, C++ Nativo}
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Comparativo de tempo de execução para modelos leves (baixa carga computacional).}
+    \label{graf:tempo-leves}
+\end{figure}
+
+Por outro lado, a \hyperref[graf:tempo-complexos]{Figura~\ref*{graf:tempo-complexos}} demonstra o comportamento em modelos mais complexos. É possível observar que a diferença visual entre as barras praticamente desaparece.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            ybar,
+            symbolic x coords={Speech, Person},
+            xtick=data,
+            nodes near coords,
+            nodes near coords style={font=\footnotesize},
+            ylabel={Tempo (ms)},
+            xlabel={Modelos},
+            ymin=0, ymax=180, 
+            legend style={at={(0.5,-0.15)}, anchor=north, legend columns=-1},
+            width=0.6\textwidth,
+            height=7cm,
+            bar width=1.5cm,
+            enlarge x limits=0.5,
+            grid=major,
+            grid style={dashed, gray!30}
+        ]
+            \addplot[fill=red!60] coordinates {(Speech,10.914) (Person,150.674)};
+            \addplot[fill=gray!60] coordinates {(Speech,9.851) (Person,149.260)};
+            \legend{Robotics Language, C++ Nativo}
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Comparativo de tempo de execução para modelos complexos.}
+    \label{graf:tempo-complexos}
+\end{figure}
+
+Para o modelo \textit{Person Detection}, a diferença representa apenas cerca de 0,94\% do tempo total de execução (150,674 ms contra 149,260 ms). Isso confirma que o impacto relativo do \textit{wrapper} diminui drasticamente conforme a complexidade do modelo aumenta, tornando a solução viável para aplicações reais de TinyML.
+
+\subsection{Análise Qualitativa: Facilidade e Manutenibilidade}
+
+Além das métricas de desempenho, a facilidade de desenvolvimento e a manutenibilidade do código são fatores cruciais. Uma comparação pode ser feita entre o \hyperref[lst:teste-bib-rob]{Código~\ref*{lst:teste-bib-rob}} (\texttt{.rob} com biblioteca padrão) e \hyperref[lst:teste-cpp]{Código~\ref*{lst:teste-cpp}} (C++ com TFLM) apresentados nos apêndices do trabalho.
 
 No desenvolvimento em C++, o programador precisa ter conhecimento detalhado da arquitetura do \textit{framework} para que consiga manipular corretamente os símbolos e funções do TFLM. Para que seja desenvolvida uma aplicação funcional é necessário: incluir múltiplos arquivos de cabeçalho específicos, instanciar manualmente o registrador de operadores e registrar operador por operador, gerenciar explicitamente o ciclo de vida do intérprete e a alocação de tensores, realizar verificações de versão de schema (TFLITE\_SCHEMA\_VERSION), acessar ponteiros brutos e iterar sobre eles para manipular os dados de entrada e saída, entre outras tarefas complexas.
 
@@ -135,9 +197,3 @@ Em contrapartida, o desenvolvimento utilizando a biblioteca padrão em RL é sig
 
 Apesar do código em RL possuir mais caracteres por conta da ausência de um sistema de arquivos para incluir os dados do modelo e dados de entrada diretamente (como é feito em C++), o número de linhas de código é significativamente menor, o que facilita a leitura e manutenção do código.
 
-\section{Considerações Finais}
-A integração do TFLM à linguagem RL, por meio da biblioteca padrão desenvolvida, foi validada com sucesso na máquina de desenvolvimento através de testes funcionais e uma análise comparativa de eficiência. Os resultados indicam que a solução proposta se mostra funcional e eficaz, proporcionando uma alternativa viável para o desenvolvimento de aplicações TinyML em RL.
-
-Apesar do aumento no tamanho do binário e no tempo de execução, os impactos foram considerados aceitáveis, especialmente quando comparados aos benefícios em termos de facilidade de desenvolvimento e manutenibilidade do código.
-
-O plano inicial era realizar os testes tanto na máquina de desenvolvimento quanto em uma placa embarcada com o microcontrolador STM32F407VET6. No entanto, devido a limitações de tempo, os testes em ambiente embarcado não foram concluídos. Recomenda-se que futuros trabalhos explorem essa etapa, avaliando o desempenho e a eficiência da solução em um ambiente real de aplicação TinyML.

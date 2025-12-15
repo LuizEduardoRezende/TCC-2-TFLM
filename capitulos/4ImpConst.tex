@@ -48,7 +48,7 @@ struct TFLM_Instance {
 };
 \end{lstlisting}
 
-\subsection{Tipo enumerado \texttt{KernelType} e função \texttt{RegisterOp}}
+\subsection{Tipo Enumerado \texttt{KernelType} e Função \texttt{RegisterOp}}
 A enumeração \texttt{KernelType}, inspirada na enumeração \texttt{BuiltinOperator} do próprio TFLM, foi criada com o intuito de possibilitar o registro dinâmico de operadores (\textit{kernels}) necessários para a execução de um modelo. Tanto a enumeração quanto a função \texttt{RegisterOp} atuam em conjunto para garantir que apenas os \textit{kernels} essenciais, como \texttt{CONV\_2D} ou \texttt{FULLY\_CONNECTED}, sejam carregados dinamicamente conforme a necessidade especificada pelo desenvolvedor. 
 
 A função \texttt{RegisterOp} recebe como parâmetros o resolvedor de operações do TFLM e o tipo do \textit{kernel} a ser registrado. Utilizando uma estrutura de controle \texttt{switch-case}, a função verifica o tipo do \textit{kernel} e chama o método apropriado do resolvedor para registrá-lo. Além disso, ela contém diretivas de compilação condicional para incluir ou excluir o registro de determinados \textit{kernels} com base em flags de compilação, como \texttt{ENABLE\_ADD} ou \texttt{ENABLE\_AVERAGE\_POOL\_2D}. Caso o \textit{kernel} solicitado não esteja habilitado ou não seja suportado, a função imprime uma mensagem de aviso.
@@ -459,8 +459,6 @@ Este método é responsável por realizar verificações quanto ao índice forne
 \subsubsection{\texttt{generateOutputAccess} (\texttt{.output})}
 Este método é responsável por gerar o código LLVM-IR responsável por resgatar valores do tensor de saída do modelo. Ele se assemelha bastante ao método \texttt{generateInputAccess}, com algumas diferenças importantes. O método realiza as seguintes etapas principais:
 
-%\textbf{COMENTÁRIO LUIZ: Essa subsection foi implementada, porém não está funcionando corretamente.}
-
 \begin{enumerate}
     \item Prepara o índice do tensor: caso o índice não seja fornecido, o valor padrão é 0.
     \item Chama a função \texttt{GetOutputTensor} do \textit{wrapper} C: o compilador gera chamadas para essa função, passando o \textit{handle} do modelo e o índice do tensor, para obter o ponteiro para o tensor de saída.
@@ -477,18 +475,5 @@ Este método é responsável por gerar o código LLVM-IR necessário para invoca
     \item Retorna \texttt{nullptr}: como a invocação do modelo não produz um valor diretamente, o método retorna \texttt{nullptr}.
 \end{enumerate}
 
-\section{Considerações Finais}
 
-\subsection{Limitações}
-Apesar da implementação ser funcional, algumas partes apresentam certas limitações e desvantagens que poderiam ter sido aprimoradas. No entanto, devido ao tempo disponível e ao grande escopo do projeto, algumas decisões foram tomadas visando a conclusão do trabalho.
-
-Um aspecto que pode ser melhorado é a convenção adotada para a entrada e saída de dados nos modelos. Atualmente, caso o desenvolvedor utilize variáveis ou vetores de ponto flutuante, a responsabilidade pela conversão e quantização recai sobre o \textit{wrapper}. Essa abordagem simplifica o uso da solução ao encapsular a complexidade, porém pode introduzir certas limitações. Por exemplo, ao utilizar métodos de arredondamento durante a quantização ou conversão de tipos, pode ocorrer perda de precisão, o que deve ser considerado em aplicações sensíveis a erros.
-
-Outra limitação está relacionada aos tokens que tratam o acesso aos tensores de entrada e saída de um modelo. Eles exigem uma sintaxe específica: um identificador seguido de ``.input'' ou ``.output''. Isso restringe a linguagem RL, impedindo que campos chamados \texttt{input} e \texttt{output} sejam declarados em tipos definidos pelo usuário (\textit{types}, na terminologia da RL). O ideal seria não criar esses tokens na linguagem, mas sim tratar o acesso aos tensores como membros normais de um tipo definidos pelo usuário. Dessa forma, durante a análise semântica, o compilador verificaria se o identificador é um modelo, e então permitiria o acesso aos membros \texttt{input} e \texttt{output} normalmente.
-
-Por fim, a classe \texttt{ModelNode} concentra uma grande quantidade de responsabilidades e utiliza um esquema de roteamento interno para decidir qual operação realizar. Isso resulta em um código menos modular e mais acoplado. O ideal seria dividir cada funcionalidade em classes separadas, como \texttt{ModelDeclarationNode}, \texttt{ModelInvokeNode}, \texttt{ModelInputNode} e \texttt{ModelOutputNode}.
-
-Algumas dessas limitações podem ser melhoradas em trabalhos futuros. Isso inclui um refatoramento do fluxo do \textit{frontend} e a criação de novas estratégias no \textit{wrapper} para contornar a perda de precisão durante a quantização.
-
-\subsection{Portabilidade e Suporte a Diferentes Arquiteturas}
-Este trabalho tem como objetivo inicial implementar o suporte para o TFLM na arquitetura ARM Cortex-M, utilizada por diversas famílias de microcontroladores, como a STM32. No entanto, o desenvolvedor pode escolher a arquitetura desejada para gerar o \textit{firmware}, desde que o Robcmp e o TFLM ofereçam suporte à plataforma escolhida. Para isso, é necessário compilar tanto o \textit{wrapper} quanto a biblioteca do TFLM para a arquitetura específica, conforme demonstrado na \hyperref[sec:ambiente-experimental]{Seção~\ref*{sec:ambiente-experimental}}. Dessa forma, o sistema pode ser adaptado para diferentes plataformas, bastando seguir o procedimento de compilação adequado.
+O modelo de \textit{wrapper} implementado neste capítulo, juntamente com as adaptações de \textit{frontend}, estabelece a base de interoperabilidade necessária para o desenvolvimento em RL. Essa arquitetura foi projetada para ser adaptável: o desenvolvedor pode escolher a arquitetura desejada para gerar o \textit{firmware} (ex: ARM Cortex-M/STM32), desde que o Robcmp e o TFLM ofereçam suporte à plataforma. Para isso, basta compilar o \textit{wrapper} e a biblioteca do TFLM para a arquitetura específica, garantindo a portabilidade do sistema. As próximas etapas se concentram na validação funcional e na análise comparativa de eficiência da solução.

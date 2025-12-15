@@ -48,7 +48,11 @@ Este trabalho teve como objetivo integrar o TFLM à linguagem RL, estendendo sua
 \end{itemize}
 
 \section{Contribuição do Trabalho}
-A principal contribuição deste trabalho é a extensão da RL para viabilizar o desenvolvimento de aplicações de ML em microcontroladores de forma nativa. Ao integrar o \textit{framework} TFLM, este projeto dota a linguagem de uma sintaxe de alto nível que abstrai a complexidade da inferência. Dessa forma, os desenvolvedores podem aliar o poder do TinyML aos benefícios já oferecidos pela RL, como o desenvolvimento de \textit{firmware} com baixo acoplamento, alta coesão e melhor manutenibilidade.
+A principal contribuição deste trabalho é a extensão da RL para viabilizar o desenvolvimento de aplicações de ML em microcontroladores de forma nativa. Ao integrar o framework TFLM, este projeto dota a linguagem de uma nova sintaxe de alto nível e amplia sua biblioteca padrão, o que, em conjunto, abstrai a complexidade da inferência. Dessa forma, os desenvolvedores podem aliar o poder do TinyML aos benefícios já oferecidos pela RL, como o desenvolvimento de \textit{firmware} com baixo acoplamento, alta coesão e melhor manutenibilidade.
+
+Foi desenvolvida então a biblioteca padrão \texttt{ai.tflm}, que abstrai o gerenciamento manual de tensores, kernels e alocação de memória. Além disso, o projeto estabeleceu um suporte robusto a tipos e convenções de inferência, permitindo que o desenvolvedor utilize valores de ponto flutuante (float) em RL, enquanto o \textit{wrapper} se encarrega internamente da conversão e otimização para os formatos de quantização (8 bits), comuns em ambientes de recursos limitados. A extensão experimental do \textit{frontend} da RL para suportar comandos nativos, como \texttt{model} e \texttt{invoke}, complementa a inovação ao simplificar a experiência de desenvolvimento.
+
+O diferencial estratégico do trabalho reside na redução da barreira técnica em relação ao estado da arte. Diferentemente do desenvolvimento nativo em C++ com o TFLM, que exige conhecimento avançado em ferramentas de compilação cruzada e gestão de memória de baixo nível, a solução em RL simplifica o fluxo de trabalho, tornando o Edge AI mais acessível. O impacto prático é a democratização do TinyML, oferecendo uma alternativa eficiente e com alto nível de abstração que resulta em maior velocidade de desenvolvimento.
 
 % \textbf{Comentários Emília: Qual o seu diferêncial para com a literatura?, Qual sua contribuição?, Qual a justificativa da pesquisa?}
 
